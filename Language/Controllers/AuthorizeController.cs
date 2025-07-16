@@ -32,7 +32,7 @@ public class AuthorizeController : ControllerBase
     {
         var user = await _dbContext.Users.FirstOrDefaultAsync(i => i.Email == request.Email);
         if (user != null)
-            return Conflict();
+            return Conflict("Пользователь c таким Email уже существует");
         
         var newUser = new User()
         {
@@ -52,7 +52,7 @@ public class AuthorizeController : ControllerBase
     {
         var user = await _dbContext.Users.FirstOrDefaultAsync(i => i.Email == email && i.Password == password);
         if (user == null)
-            return NotFound();
+            return Unauthorized();
         var claims = new List<Claim>();
         claims.Add(new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()));;
       
@@ -69,11 +69,11 @@ public class AuthorizeController : ControllerBase
         return new ObjectResult(response);
     }
     
-    [HttpGet("Test")]
+    [HttpGet("CheckToken")]
     [CustomAuthorize]
-    public async Task<string> Test()
+    public IActionResult CheckToken()
     {
-        return "Hello World";
+        return Ok();
     }
     
 }

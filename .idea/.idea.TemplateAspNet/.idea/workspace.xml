@@ -12,16 +12,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="e3589237-5396-47ea-897a-3724d0802e02" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/.idea.TemplateAspNet/.idea/dataSources.local.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/.idea.TemplateAspNet/.idea/dataSources.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Language/Authorize/ClaimExtentions.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Language/Authorize/CustomAuthorizeAttribute.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Language/Authorize/JwtOptions.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Language/Authorize/Requests/RegisterUser.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Language/Authorize/Responses/LoginResponse.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Language/Controllers/AuthorizeController.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Language/Language.csproj" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Language/Model/User.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.TemplateAspNet/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.TemplateAspNet/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Language/Authorize/CustomAuthorizeAttribute.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Language/Authorize/CustomAuthorizeAttribute.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Language/Controllers/AuthorizeController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Language/Controllers/AuthorizeController.cs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -73,6 +66,10 @@
     &quot;.NET Launch Settings Profile.TemplateAspNet: http.executor&quot;: &quot;Debug&quot;,
     &quot;.NET Launch Settings Profile.TemplateAspNet: https.executor&quot;: &quot;Run&quot;,
     &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;Publish to IIS.Language: local.executor&quot;: &quot;Run&quot;,
+    &quot;Publish to IIS.Publish Language to IIS (1).executor&quot;: &quot;Run&quot;,
+    &quot;Publish to IIS.Publish Language to IIS (2).executor&quot;: &quot;Run&quot;,
+    &quot;Publish to IIS.Publish Language to IIS.executor&quot;: &quot;Run&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
@@ -90,9 +87,21 @@
     ]
   }
 }</component>
-  <component name="RunManager" selected=".NET Launch Settings Profile.TemplateAspNet: http">
+  <component name="RunManager" selected="Publish to IIS.Language: local">
     <configuration name="Language: local" type="DotNetMsBuildPublish" factoryName="Publish to IIS">
       <riderPublish publish_profile="local.pubxml" pubxml_path="$PROJECT_DIR$/Language/Properties/PublishProfiles/local.pubxml" uuid_high="5922432343900243827" uuid_low="-5085605643910205388" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Publish Language to IIS (1)" type="DotNetMsBuildPublish" factoryName="Publish to IIS">
+      <riderPublish configuration="Release" platform="Any CPU" publish_profile="&lt;no publish profile&gt;" uuid_high="5922432343900243827" uuid_low="-5085605643910205388" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Publish Language to IIS (2)" type="DotNetMsBuildPublish" factoryName="Publish to IIS">
+      <riderPublish configuration="Release" platform="Any CPU" publish_profile="local.pubxml" uuid_high="5922432343900243827" uuid_low="-5085605643910205388" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Publish Language to IIS" type="DotNetMsBuildPublish" factoryName="Publish to IIS">
+      <riderPublish configuration="Release" platform="Any CPU" publish_profile="local.pubxml" uuid_high="5922432343900243827" uuid_low="-5085605643910205388" />
       <method v="2" />
     </configuration>
     <configuration name="TemplateAspNet: local" type="DotNetMsBuildPublish" factoryName="Publish to IIS">
@@ -156,7 +165,7 @@
       <workItem from="1752025483996" duration="3790000" />
       <workItem from="1752057399243" duration="297000" />
       <workItem from="1752502501057" duration="683000" />
-      <workItem from="1752503201450" duration="12491000" />
+      <workItem from="1752503201450" duration="14583000" />
     </task>
     <task id="LOCAL-00001" summary="migrate net9">
       <option name="closed" value="true" />
@@ -166,7 +175,15 @@
       <option name="project" value="LOCAL" />
       <updated>1751894591175</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="Init">
+      <option name="closed" value="true" />
+      <created>1752516800006</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1752516800006</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -177,7 +194,8 @@
   <component name="VcsManagerConfiguration">
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
     <MESSAGE value="migrate net9" />
-    <option name="LAST_COMMIT_MESSAGE" value="migrate net9" />
+    <MESSAGE value="Init" />
+    <option name="LAST_COMMIT_MESSAGE" value="Init" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -206,32 +224,6 @@
             </endOffsets>
           </properties>
           <option name="timeStamp" value="4" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="DotNet Breakpoints">
-          <url>file://$PROJECT_DIR$/Language/Controllers/AuthorizeController.cs</url>
-          <line>67</line>
-          <properties documentPath="C:\Users\Jecos\Desktop\LanguageBackend\LanguageBackend\Language\Controllers\AuthorizeController.cs" containingFunctionPresentation="Method 'GetToken'">
-            <startOffsets>
-              <option value="2085" />
-            </startOffsets>
-            <endOffsets>
-              <option value="2165" />
-            </endOffsets>
-          </properties>
-          <option name="timeStamp" value="10" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="DotNet Breakpoints">
-          <url>file://$PROJECT_DIR$/Language/Authorize/CustomAuthorizeAttribute.cs</url>
-          <line>18</line>
-          <properties documentPath="C:\Users\Jecos\Desktop\LanguageBackend\LanguageBackend\Language\Authorize\CustomAuthorizeAttribute.cs" containingFunctionPresentation="Method 'OnAuthorization'">
-            <startOffsets>
-              <option value="545" />
-            </startOffsets>
-            <endOffsets>
-              <option value="610" />
-            </endOffsets>
-          </properties>
-          <option name="timeStamp" value="15" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
