@@ -1,8 +1,10 @@
-﻿using System.Text;
+﻿using System.Reflection;
+using System.Text;
 using Language.Database;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 
 namespace Language
 {
@@ -25,7 +27,19 @@ namespace Language
             services.AddControllers();
             services.AddEndpointsApiExplorer();
        //     services.AddMediatR(typeof(Startup));
-            services.AddSwaggerGen();
+            services.AddEndpointsApiExplorer();
+            services.AddSwaggerGen(options =>
+            {
+                options.SwaggerDoc("v1", new OpenApiInfo
+                {
+                    Version = "v1",
+                    Title = "Language API",
+                });
+
+                // using System.Reflection;
+                var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
+            });;
             
             
             AddJwtAuthentication(services);
@@ -37,6 +51,7 @@ namespace Language
             app.UseRouting();
             app.UseSwagger();
             app.UseSwaggerUI();
+            
             app.UseHttpsRedirection();
 
             app.UseAuthentication();

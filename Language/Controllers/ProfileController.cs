@@ -22,6 +22,10 @@ public class ProfileController : ControllerBase
     }
 
 
+    /// <summary>
+    /// Получить информацию о пользователе
+    /// </summary>
+    /// <returns></returns>
     [HttpGet("User")]
     [CustomAuthorize]
     public async Task<ActionResult> GetUser()
@@ -44,6 +48,11 @@ public class ProfileController : ControllerBase
     }
 
     
+    /// <summary>
+    /// Добавить слово в словарь пользователя
+    /// </summary>
+    /// <param name="word"></param>
+    /// <returns></returns>
     [CustomAuthorize]
     [HttpPost("UserDictionary")]
     public async Task<IActionResult> AddWordToUser(string word)
@@ -75,6 +84,10 @@ public class ProfileController : ControllerBase
         return BadRequest("Word not found");
     }
 
+    /// <summary>
+    /// Получить словарь пользователя
+    /// </summary>
+    /// <returns></returns>
     [CustomAuthorize]
     [HttpGet("UserDictionary")]
     public async Task<IActionResult> GetWordsByUser()

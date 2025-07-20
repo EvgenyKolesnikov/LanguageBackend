@@ -24,6 +24,11 @@ public class AdminController : ControllerBase
     }
 
 
+    /// <summary>
+    /// Добавить слово в общий словарь
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns></returns>
     [HttpPost("Dictionary")]
     public async Task<IActionResult> AddWordInDictionary(AddWordRequest request)
     {
@@ -39,6 +44,11 @@ public class AdminController : ControllerBase
         return Ok();
     }
 
+    
+    /// <summary>
+    /// Получить все слова из словаря
+    /// </summary>
+    /// <returns></returns>
     [HttpGet("Dictionary")]
     public async Task<IActionResult> GetDictionary()
     {

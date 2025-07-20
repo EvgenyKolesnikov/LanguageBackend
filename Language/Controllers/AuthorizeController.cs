@@ -26,7 +26,11 @@ public class AuthorizeController : ControllerBase
     }
 
 
-
+    /// <summary>
+    /// Создание нового пользователя
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns></returns>
     [HttpPost("Register")]
     public async Task<IActionResult> Register(RegisterUser request)
     {
@@ -47,6 +51,12 @@ public class AuthorizeController : ControllerBase
         return Ok();
     }
     
+    /// <summary>
+    /// Аутенфикация нового пользователя
+    /// </summary>
+    /// <param name="email"></param>
+    /// <param name="password"></param>
+    /// <returns></returns>
     [HttpGet("Login")]
     public async Task<ActionResult<LoginResponse>> GetToken(string email, string password)
     {
@@ -69,6 +79,10 @@ public class AuthorizeController : ControllerBase
         return new ObjectResult(response);
     }
     
+    /// <summary>
+    /// Проверка валидности токена
+    /// </summary>
+    /// <returns></returns>
     [HttpGet("CheckToken")]
     [CustomAuthorize]
     public IActionResult CheckToken()
