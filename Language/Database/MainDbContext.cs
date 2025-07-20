@@ -9,16 +9,20 @@ namespace Language.Database
     {
         public MainDbContext(DbContextOptions<MainDbContext> options) : base(options)
         {
-         //   Database.EnsureDeleted();
-         //   Database.EnsureCreated();
+        //    Database.EnsureDeleted();
+        //    Database.EnsureCreated();
         }
 
         public DbSet<User> Users { get; set; }
+        public DbSet<Model.Dictionary> Dictionary { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             Assembly assemblyWithConfigurations = GetType().Assembly; //get whatever assembly you want
             modelBuilder.ApplyConfigurationsFromAssembly(assemblyWithConfigurations);
+
+
+            Users.AddAsync(new User() { Id = new Guid(), Name = "Admin", Email = "test@mail.ru", Password = "1234" });
         }
     }
 }
