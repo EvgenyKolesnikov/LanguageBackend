@@ -24,4 +24,14 @@ public class UtilityController: ControllerBase
         return Ok();   
     }
 
+
+    [HttpGet("Migrate")]
+    public async Task Migrate()
+    {
+        _dbContext.Database.EnsureDeleted();
+        _dbContext.Database.EnsureCreated();
+        
+        await _dbContext.Users.AddAsync(new User() { Id = new Guid(), Name = "Admin", Email = "test@mail.ru", Password = "1234" });
+    }
+
 }
