@@ -1,4 +1,5 @@
 ﻿using Language.Database;
+using Language.Model;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Language.Controllers;
@@ -26,7 +27,7 @@ public class UtilityController: ControllerBase
 
 
     [HttpGet("Migrate")]
-    public async Task Migrate()
+    public async Task MigrateData()
     {
         _dbContext.Database.EnsureDeleted();
         _dbContext.Database.EnsureCreated();
