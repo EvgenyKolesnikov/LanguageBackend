@@ -18,7 +18,8 @@ public class UtilityController: ControllerBase
     [HttpGet("FillData")]
     public async Task<ActionResult> FillData()
     {
-        
+        await _dbContext.Users.AddAsync(new User() { Id = new Guid(), Name = "Admin", Email = "test@mail.ru", Password = "1234" });
+        await _dbContext.SaveChangesAsync();
         
         
         
@@ -31,8 +32,6 @@ public class UtilityController: ControllerBase
     {
         _dbContext.Database.EnsureDeleted();
         _dbContext.Database.EnsureCreated();
-        
-        await _dbContext.Users.AddAsync(new User() { Id = new Guid(), Name = "Admin", Email = "test@mail.ru", Password = "1234" });
     }
 
 }
