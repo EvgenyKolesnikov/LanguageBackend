@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
 using System.Text;
 using Language.Database;
+using Language.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -22,11 +23,9 @@ namespace Language
 
         public void ConfigureServices(IServiceCollection services)
         {
-
-
             services.AddControllers();
             services.AddEndpointsApiExplorer();
-       //     services.AddMediatR(typeof(Startup));
+            
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen(options =>
             {
@@ -39,11 +38,14 @@ namespace Language
                 // using System.Reflection;
                 var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
                 options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
-            });;
-            
-            
+            });
             AddJwtAuthentication(services);
             AddDbContext(services);
+            
+            
+            services.AddTransient<DictionaryService>();
+            services.AddTransient<AuthService>();
+
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

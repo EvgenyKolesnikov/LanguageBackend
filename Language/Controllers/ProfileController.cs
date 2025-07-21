@@ -5,6 +5,7 @@ using Language.Database;
 using Language.Dictionary;
 using Language.Model;
 using Language.Profile;
+using Language.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -16,10 +17,12 @@ namespace Language.Controllers;
 public class ProfileController : ControllerBase
 {
     public readonly MainDbContext _dbContext;
+    public readonly DictionaryService _dictionaryService;
     
-    public ProfileController(MainDbContext dbcontext)
+    public ProfileController(MainDbContext dbcontext, DictionaryService dictionaryService)
     {
         _dbContext = dbcontext;
+        _dictionaryService = dictionaryService;
     }
 
 
@@ -67,13 +70,10 @@ public class ProfileController : ControllerBase
         var user = await _dbContext.Users.FindAsync(new Guid (userIdClaim));
         if (user == null) return BadRequest("User Not Found");
         
-        var wordDb = await _dbContext.Dictionary.Include(i => i.Users)
-            .FirstOrDefaultAsync(i => i.Word == word.ToLower());
+        var wordDb = await _dictionaryService.AddWordToUser(word, user);
 
         if (wordDb != null)
         {
-            wordDb.Users.Add(user);    
-            await _dbContext.SaveChangesAsync();
             return Ok();
         }
         
@@ -93,10 +93,9 @@ public class ProfileController : ControllerBase
         
         if (userIdClaim == null)
             return BadRequest("UserId claim not found in token");
-
-        var listDictionary = await _dbContext.Users.Where(i => i.Id == new Guid(userIdClaim))
-            .Select(i => new GetWordsByUserResponse(i.Dictionary)).ToListAsync();
         
-        return Ok(listDictionary);
+        var response = await _dictionaryService.GetWordsByUser(new Guid(userIdClaim));
+        
+        return Ok(response);
     }
 }

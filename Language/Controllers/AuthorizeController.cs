@@ -5,6 +5,7 @@ using Language.Database;
 using Language.Model;
 using Language.Requests;
 using Language.Responses;
+using Language.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -18,11 +19,13 @@ public class AuthorizeController : ControllerBase
 {
     public readonly JwtOptions _options;
     public readonly MainDbContext _dbContext;
+    public readonly AuthService _authService;
 
-    public AuthorizeController(IOptions<JwtOptions> options,MainDbContext dbcontext)
+    public AuthorizeController(IOptions<JwtOptions> options,MainDbContext dbcontext, AuthService authService)
     {
         _options = options.Value;
         _dbContext = dbcontext;
+        _authService = authService;
     }
 
 
@@ -37,17 +40,9 @@ public class AuthorizeController : ControllerBase
         var user = await _dbContext.Users.FirstOrDefaultAsync(i => i.Email == request.Email);
         if (user != null)
             return Conflict("Пользователь c таким Email уже существует");
-        
-        var newUser = new User()
-        {
-            Id = Guid.NewGuid(),
-            Name = request.Name,
-            Email = request.Email,
-            Password = request.Password
-        };
-        
-        await _dbContext.Users.AddAsync(newUser);
-        await _dbContext.SaveChangesAsync();
+       
+        await _authService.RegisterUser(request);
+    
         return Ok();
     }
     

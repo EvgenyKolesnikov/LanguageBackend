@@ -1,6 +1,7 @@
 ﻿using Language.Database;
 using Language.Dictionary;
 using Language.Model;
+using Language.Services;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -15,12 +16,13 @@ public class AdminController : ControllerBase
 {
     public readonly JwtOptions _options;
     public readonly MainDbContext _dbContext;
+    public readonly DictionaryService _dictionaryService;
     
-    
-    public AdminController(IOptions<JwtOptions> options,MainDbContext dbcontext)
+    public AdminController(IOptions<JwtOptions> options, MainDbContext dbcontext, DictionaryService dictionaryService)
     {
         _options = options.Value;
         _dbContext = dbcontext;
+        _dictionaryService = dictionaryService;
     }
 
 
@@ -32,14 +34,15 @@ public class AdminController : ControllerBase
     [HttpPost("Dictionary")]
     public async Task<IActionResult> AddWordInDictionary(AddWordRequest request)
     {
-        var entity = new Model.Dictionary()
+        try
         {
-            Word = request.Word.ToLower(),
-            Translation = request.Translation.ToLower()
-        };
+            await _dictionaryService.AddWordInDictionary(request.Word, request.Translation);
+        }
+        catch (Exception e)
+        {
+            return BadRequest(e.Message);
+        }
         
-        await _dbContext.Dictionary.AddAsync(entity);
-        await _dbContext.SaveChangesAsync();
 
         return Ok();
     }
