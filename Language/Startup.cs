@@ -45,6 +45,7 @@ namespace Language
             
             services.AddTransient<DictionaryService>();
             services.AddTransient<AuthService>();
+            services.AddTransient<TextService>();
 
         }
 

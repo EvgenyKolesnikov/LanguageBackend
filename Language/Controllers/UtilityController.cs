@@ -11,12 +11,14 @@ public class UtilityController: ControllerBase
     public readonly MainDbContext _dbContext;
     public readonly DictionaryService _dictionaryService;
     public readonly AuthService _authService;
+    public readonly TextService _textService;
 
-    public UtilityController(MainDbContext dbcontext, DictionaryService dictionaryService, AuthService authService)
+    public UtilityController(MainDbContext dbcontext, DictionaryService dictionaryService, AuthService authService, TextService textService)
     {
         _dbContext = dbcontext;
         _dictionaryService = dictionaryService;
         _authService = authService;
+        _textService = textService;
     }
 
 
@@ -24,6 +26,7 @@ public class UtilityController: ControllerBase
     [HttpGet("FillData")]
     public async Task<ActionResult> FillData()
     {
+        _dbContext.ClearAll();
         var userJenya = await _authService.RegisterUser(new RegisterUser()
             { Email = "Jenya@mail.ru", Name = "Jenya", Password = "1234" });
         var userVasya = await _authService.RegisterUser(new RegisterUser()
@@ -37,6 +40,8 @@ public class UtilityController: ControllerBase
         await _dictionaryService.AddWordToUser("dog", userJenya);
         await _dictionaryService.AddWordToUser("table", userJenya);
         await _dictionaryService.AddWordToUser("dog", userVasya);
+
+        await _textService.AddText("Dog on the table");
         
         return Ok();   
     }

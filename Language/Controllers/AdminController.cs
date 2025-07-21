@@ -17,12 +17,14 @@ public class AdminController : ControllerBase
     public readonly JwtOptions _options;
     public readonly MainDbContext _dbContext;
     public readonly DictionaryService _dictionaryService;
+    public readonly TextService _textService;
     
-    public AdminController(IOptions<JwtOptions> options, MainDbContext dbcontext, DictionaryService dictionaryService)
+    public AdminController(IOptions<JwtOptions> options, MainDbContext dbcontext, DictionaryService dictionaryService, TextService textService)
     {
         _options = options.Value;
         _dbContext = dbcontext;
         _dictionaryService = dictionaryService;
+        _textService = textService;
     }
 
 
@@ -57,5 +59,12 @@ public class AdminController : ControllerBase
     {
         var response = await _dbContext.Dictionary.ToListAsync();
         return Ok(response);
+    }
+
+    [HttpPost("Text")]
+    public async Task<IActionResult> AddText(string text)
+    {
+        await _textService.AddText(text);
+        return Ok();
     }
 }

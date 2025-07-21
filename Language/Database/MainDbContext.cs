@@ -15,7 +15,8 @@ namespace Language.Database
 
         public DbSet<User> Users { get; set; }
         public DbSet<Model.Dictionary> Dictionary { get; set; }
-
+        public DbSet<Text> Texts { get; set; }
+        
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             Assembly assemblyWithConfigurations = GetType().Assembly; //get whatever assembly you want
@@ -23,6 +24,11 @@ namespace Language.Database
 
 
             Users.AddAsync(new User() { Id = new Guid(), Name = "Admin", Email = "test@mail.ru", Password = "1234" });
+        }
+
+        public void ClearAll()
+        {
+            
         }
     }
 }
