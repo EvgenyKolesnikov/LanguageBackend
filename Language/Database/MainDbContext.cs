@@ -28,7 +28,10 @@ namespace Language.Database
 
         public void ClearAll()
         {
-            
+            Users.RemoveRange(this.Users);
+            Dictionary.RemoveRange(this.Dictionary);
+            Texts.RemoveRange(this.Texts);
+            SaveChanges();
         }
     }
 }
