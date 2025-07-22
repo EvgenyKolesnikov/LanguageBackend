@@ -34,12 +34,14 @@ public class UtilityController: ControllerBase
         
         
         
-        await _dictionaryService.AddWordInDictionary("dog", "собака");
-        await _dictionaryService.AddWordInDictionary("table", "стол");
+        await _dictionaryService.AddWordInBaseDictionary("dog", "собака");
+        await _dictionaryService.AddWordInBaseDictionary("table", "стол");
+        await _dictionaryService.AddWordInExtentedDictionary("dogs", "dog");
         
-        await _dictionaryService.AddWordToUser("dog", userJenya);
+        await _dictionaryService.AddWordToUser("dogs", userJenya);
         await _dictionaryService.AddWordToUser("table", userJenya);
         await _dictionaryService.AddWordToUser("dog", userVasya);
+        
 
         await _textService.AddText("Dog on the table");
         

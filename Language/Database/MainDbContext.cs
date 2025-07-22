@@ -14,7 +14,8 @@ namespace Language.Database
         }
 
         public DbSet<User> Users { get; set; }
-        public DbSet<Model.Dictionary> Dictionary { get; set; }
+        public DbSet<BaseWord> BaseWords { get; set; }
+        public DbSet<ExtentedWord> ExtentedWords { get; set; }
         public DbSet<Text> Texts { get; set; }
         
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -29,7 +30,7 @@ namespace Language.Database
         public void ClearAll()
         {
             Users.RemoveRange(this.Users);
-            Dictionary.RemoveRange(this.Dictionary);
+            BaseWords.RemoveRange(this.BaseWords);
             Texts.RemoveRange(this.Texts);
             SaveChanges();
         }

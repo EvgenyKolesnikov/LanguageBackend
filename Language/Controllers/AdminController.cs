@@ -38,7 +38,7 @@ public class AdminController : ControllerBase
     {
         try
         {
-            await _dictionaryService.AddWordInDictionary(request.Word, request.Translation);
+            await _dictionaryService.AddWordInBaseDictionary(request.Word, request.Translation);
         }
         catch (Exception e)
         {
@@ -57,10 +57,15 @@ public class AdminController : ControllerBase
     [HttpGet("Dictionary")]
     public async Task<IActionResult> GetDictionary()
     {
-        var response = await _dbContext.Dictionary.ToListAsync();
+        var response = await _dbContext.BaseWords.ToListAsync();
         return Ok(response);
     }
 
+    /// <summary>
+    /// Добавить текст
+    /// </summary>
+    /// <param name="text"></param>
+    /// <returns></returns>
     [HttpPost("Text")]
     public async Task<IActionResult> AddText(string text)
     {

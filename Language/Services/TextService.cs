@@ -17,8 +17,8 @@ public class TextService
     {
         var words = text.Split(" ");
         
-        var dictionary = _dbContext.Dictionary.ToHashSet();
-        var dict = new List<Model.Dictionary>();
+        var dictionary = _dbContext.BaseWords.ToHashSet();
+        var dict = new List<Model.BaseWord>();
         foreach (var word in words)
         {
             var wordDb = dictionary.FirstOrDefault(i => i.Word == word.ToLower());
@@ -28,12 +28,12 @@ public class TextService
             }
             else
             {
-                var item = new Model.Dictionary()
+                var item = new Model.BaseWord()
                 {
                     Word = word.ToLower()
                 };
                 
-                await _dbContext.Dictionary.AddAsync(item);
+                await _dbContext.BaseWords.AddAsync(item);
             }
         }
 

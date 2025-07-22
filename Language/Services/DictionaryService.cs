@@ -15,33 +15,69 @@ public class DictionaryService
     }
 
 
-    public async Task<Model.Dictionary?> AddWordToUser(string word, User user)
+    public async Task<BaseWord?> AddWordToUser(string word, User user)
     {
-        var wordDb = await _dbContext.Dictionary.Include(i => i.Users)
+        BaseWord? response = null;
+        var extentedWord = await _dbContext.ExtentedWords
+            .Include(i => i.BaseWord)
+            .ThenInclude(i => i.Users)
             .FirstOrDefaultAsync(i => i.Word == word.ToLower());
-
-        if (wordDb != null)
+        if (extentedWord != null)
         {
-            wordDb.Users.Add(user);    
-            await _dbContext.SaveChangesAsync();
+            extentedWord.BaseWord.Users.Add(user);
+            response = extentedWord.BaseWord;
         }
-        return wordDb;
+        else
+        {
+            var wordDb = await _dbContext.BaseWords.Include(i => i.Users)
+                .FirstOrDefaultAsync(i => i.Word == word.ToLower());
+
+            if (wordDb != null)
+            {
+                wordDb.Users.Add(user);    
+                response = wordDb;
+                
+            }
+        }
+        
+        await _dbContext.SaveChangesAsync();
+        return response;
     }
 
-    public async Task AddWordInDictionary(string word, string translation)
+    public async Task AddWordInBaseDictionary(string word, string translation)
     {
-        var entity = new Model.Dictionary()
+        var entity = new BaseWord()
         {
             Word = word.ToLower(),
             Translation = translation.ToLower()
         };
 
-        if (await _dbContext.Dictionary.AnyAsync(i => i.Word == word.ToLower()))
+        if (await _dbContext.BaseWords.AnyAsync(i => i.Word == word.ToLower()))
         {
             throw new Exception("Word already exists");
         }
 
-        await _dbContext.Dictionary.AddAsync(entity);
+        await _dbContext.BaseWords.AddAsync(entity);
+        await _dbContext.SaveChangesAsync();
+    }
+
+    public async Task AddWordInExtentedDictionary(string word, string baseWord)
+    {
+        var baseWordDb = await _dbContext.BaseWords.FirstOrDefaultAsync(i => i.Word == baseWord.ToLower());
+        if (baseWordDb == null) return;
+        
+        var entity = new ExtentedWord()
+        {
+            Word = word.ToLower(),
+            BaseWord = baseWordDb
+        };
+
+        if (await _dbContext.ExtentedWords.AnyAsync(i => i.Word == word.ToLower()))
+        {
+            throw new Exception("Word already exists");
+        }
+
+        await _dbContext.ExtentedWords.AddAsync(entity);
         await _dbContext.SaveChangesAsync();
     }
 
