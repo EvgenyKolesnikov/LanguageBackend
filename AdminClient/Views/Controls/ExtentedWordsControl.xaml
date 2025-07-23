@@ -7,14 +7,18 @@
              mc:Ignorable="d"
              d:DesignHeight="300" d:DesignWidth="300">
     <Grid>
-        
-        <ListView ItemsSource="{Binding ExtentedWords}" Width="150">
-                    
-                    <ListView.View>
-                        <GridView>
-                                <GridViewColumn Header="Слово" Width="140" DisplayMemberBinding="{Binding }" />
-                        </GridView>
-                    </ListView.View>
-                </ListView>
+        <StackPanel>
+            
+        <Button Width="150" Height="40" Margin="0 5"  HorizontalAlignment="Left" Command="{Binding AddExtentedWordFormCommand}">Добавить слово</Button>
+            
+        <ListView ItemsSource="{Binding ExtentedWords}" Width="150"  Margin="0 5" HorizontalAlignment="Left">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="Слово" Width="140" DisplayMemberBinding="{Binding }" />
+                </GridView>
+            </ListView.View>
+        </ListView>
+            
+        </StackPanel>
     </Grid>
 </UserControl>
