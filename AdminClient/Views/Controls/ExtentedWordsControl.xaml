@@ -1,0 +1,20 @@
+﻿<UserControl x:Class="AdminClient.Views.Controls.ExtentedWordsControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:AdminClient.Views.Controls"
+             mc:Ignorable="d"
+             d:DesignHeight="300" d:DesignWidth="300">
+    <Grid>
+        
+        <ListView ItemsSource="{Binding ExtentedWords}" Width="150">
+                    
+                    <ListView.View>
+                        <GridView>
+                                <GridViewColumn Header="Слово" Width="140" DisplayMemberBinding="{Binding }" />
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+    </Grid>
+</UserControl>

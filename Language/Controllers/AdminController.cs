@@ -61,6 +61,14 @@ public class AdminController : ControllerBase
         return Ok(response);
     }
 
+    [HttpGet("GetExtentedWord")]
+    public async Task<IActionResult> GetExtentedWord(string baseWord)
+    {
+        var response = await _dbContext.ExtentedWords.Include(i => i.BaseWord)
+            .Where(i => i.BaseWord.Word == baseWord.ToLower()).Select(i => i.Word).ToListAsync();
+        return Ok(response);
+    }
+
     /// <summary>
     /// Добавить текст
     /// </summary>
