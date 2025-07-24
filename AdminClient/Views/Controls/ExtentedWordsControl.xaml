@@ -9,15 +9,38 @@
     <Grid>
         <StackPanel>
             
-        <Button Width="150" Height="40" Margin="0 5"  HorizontalAlignment="Left" Command="{Binding AddExtentedWordFormCommand}">Добавить слово</Button>
+        <StackPanel Orientation="Horizontal" Margin="0 5">
+                <TextBox Width="90" Text="{Binding AddExtentedWordRequest.Word, UpdateSourceTrigger=PropertyChanged}" Margin="0 0 5 0"/>
+                <Button Width="100" Content="Добавить слово" Command="{Binding AddExtentedWordCommand}"/>
+        </StackPanel>   
             
-        <ListView ItemsSource="{Binding ExtentedWords}" Width="150"  Margin="0 5" HorizontalAlignment="Left">
+        <ListView ItemsSource="{Binding ExtentedWords}" Width="255"  Margin="0 5" HorizontalAlignment="Left">
             <ListView.View>
                 <GridView>
-                    <GridViewColumn Header="Слово" Width="140" DisplayMemberBinding="{Binding }" />
+                    <GridViewColumn Header="Слово" Width="140" DisplayMemberBinding="{Binding Word }" />
+                    
+                    
+                    <GridViewColumn >
+                        <GridViewColumn.CellTemplate >
+                            <DataTemplate >
+                                <Button x:Name="EditButton" Content="Edit" Height="25" Width="40" Command="{Binding DataContext.OpenEditExtentedWordForm,RelativeSource={RelativeSource Mode=FindAncestor,AncestorType={x:Type ListView}}}" CommandParameter="{Binding RelativeSource={RelativeSource Self}}"/>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    
+                    <GridViewColumn >
+                        <GridViewColumn.CellTemplate >
+                            <DataTemplate >
+                                <Button x:Name="EditButton" Content="Delete" Height="25" Width="40" Command="{Binding DataContext.DeleteExtentedWordCommand,RelativeSource={RelativeSource Mode=FindAncestor,AncestorType={x:Type ListView}}}" CommandParameter="{Binding RelativeSource={RelativeSource Self}}"/>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    
                 </GridView>
             </ListView.View>
         </ListView>
+        
+        
             
         </StackPanel>
     </Grid>

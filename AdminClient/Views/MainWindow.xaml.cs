@@ -37,6 +37,7 @@ public partial class MainWindow : Window
         {
             case ("Page1"):
                 MainContentController.Content = new DictionaryControl(_viewModel);
+                _viewModel.Update();
                 break;
             default:
                 MainContentController.Content = new DictionaryControl(_viewModel);
