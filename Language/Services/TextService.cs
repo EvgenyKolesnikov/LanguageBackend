@@ -1,4 +1,7 @@
 ﻿using Language.Database;
+using Language.Dictionary.Responses;
+using Language.Model;
+using Microsoft.EntityFrameworkCore;
 
 namespace Language.Services;
 
@@ -32,7 +35,7 @@ public class TextService
                 {
                     Word = word.ToLower()
                 };
-                
+                dict.Add(item);
                 await _dbContext.BaseWords.AddAsync(item);
             }
         }
@@ -45,5 +48,18 @@ public class TextService
         
         await _dbContext.Texts.AddAsync(entity);
         await _dbContext.SaveChangesAsync();
+    }
+
+    public async Task<ICollection<Text>> GetTexts()
+    {
+        var response = await _dbContext.Texts.ToHashSetAsync();
+        return response;
+    }
+
+    public async Task<GetWordsByTextResponse> GetWordsByText(int textId)
+    {
+        var text = await _dbContext.Texts.Include(i => i.Dictionary).FirstOrDefaultAsync(i => i.Id == textId);
+        var response = new GetWordsByTextResponse(text);
+        return response;
     }
 }

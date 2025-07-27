@@ -20,25 +20,27 @@ public class MainViewModel : BaseViewModel
     private readonly HttpClient _httpClient;
 
     public ObservableCollection<BaseWord> BaseWords { get; set; } = new ();
-    
     public ObservableCollection<GetExtentedWords> ExtentedWords { get; set; } = new ();
+    
+    public ObservableCollection<Text> Texts { get; set; } = new ();
     
     public string NewExtentedWord { get; set; }
     public TriggerCommand<object> SaveExtentedWordCommand { get; set; }
-    
-    
-    
-    
     public TriggerCommand<object> OpenEditWordForm { get; set; }
+    
+    // Extented Words
     public TriggerCommand<object> ExtentedWordsCommand { get; set; }
     public TriggerCommand AddExtentedWordCommand { get; set; }
     public TriggerCommand<object> OpenEditExtentedWordForm { get; set; }
     public TriggerCommand EditExtentedWordCommand { get; set; }
     public TriggerCommand<object> DeleteExtentedWordCommand { get; set; }
-    
-    
     public AddExtentedWord AddExtentedWordRequest { get; set; } = new();
     public EditExtentedWordRequest EditExtentedWordRequest { get; set; } = new();
+    
+    // Texts
+    
+    public TriggerCommand<object> GetWordByTextCommand { get; set; }
+    
     
     public MainViewModel(IOptions<BackendOptions> options,IHttpClientFactory clientFactory) 
     {
@@ -58,7 +60,9 @@ public class MainViewModel : BaseViewModel
         try
         {
             BaseWords = await GetWords();
+            Texts = await GetTexts();
             RaisePropertyChanged(nameof(BaseWords));
+            RaisePropertyChanged(nameof(Texts));
         }
         catch (Exception e)
         {
@@ -73,6 +77,8 @@ public class MainViewModel : BaseViewModel
         OpenEditExtentedWordForm = new TriggerCommand<object>(EditExtentedWordForm);
         EditExtentedWordCommand = new TriggerCommand(EditExtentedWord);
         DeleteExtentedWordCommand =  new TriggerCommand<object>(DeleteExtentedWord);
+        
+        GetWordByTextCommand = new TriggerCommand<object>(GetWordByText);
     }
     
   
@@ -160,6 +166,38 @@ public class MainViewModel : BaseViewModel
             {
                 int i = ExtentedWords.IndexOf(objToEdit);
                 ExtentedWords[i] = responseObj;
+            }
+        }
+    }
+    
+    // Получить все слова
+    private async Task<ObservableCollection<Text>> GetTexts()
+    {
+        var response = await _httpClient.GetAsync(_options.Host + "/api/Admin/Text");
+        var responseObj = await ResponseHandler.DeserializeAsync<ObservableCollection<Text>>(response);
+        
+        return responseObj;
+    }
+
+    // Получить слова по тексту
+    private async void GetWordByText(object text)
+    {
+        var Datacontext = ((Button)text).DataContext;
+        if (Datacontext is Text _text)
+        {
+            var response = await _httpClient.GetAsync(_options.Host + $"/api/Admin/Text/{_text.Id}");
+            var responseObj = await ResponseHandler.DeserializeAsync<GetWordsByTextResponse>(response);
+            BaseWords.Clear();
+
+            foreach (var word in responseObj.Words)
+            {
+                var baseWord = new BaseWord()
+                {
+                    Id = word.Id,
+                    Word = word.Word,
+                    Translation = word.Translation,
+                };
+                BaseWords.Add(baseWord);
             }
         }
     }

@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:AdminClient"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="MainWindow" Height="550" Width="1300">
     <Window.Resources>
         
         <Style TargetType="Button" x:Key="MenuButton">
@@ -47,6 +47,7 @@
             <ColumnDefinition Width="200" />
             <ColumnDefinition Width="300"/>
             <ColumnDefinition Width="300"/>
+            <ColumnDefinition Width="400"/>
         </Grid.ColumnDefinitions>
         
         <Rectangle Fill="#FF1A1A1D"/>
@@ -70,6 +71,10 @@
         
         <StackPanel Grid.Column="2" Grid.Row="1">
             <ContentControl Name="MainContentController1" Margin="5" MaxWidth="550" MaxHeight="{Binding ElementName=currentWindow - 200}"/>
+        </StackPanel>
+        
+        <StackPanel Grid.Column="3" Grid.Row="1">
+            <ContentControl Name="TextContentController" Margin="5" MaxWidth="550" MaxHeight="{Binding ElementName=currentWindow - 200}"/>
         </StackPanel>
     </Grid>
 </Window>

@@ -42,6 +42,7 @@ public partial class MainWindow : Window
             default:
                 MainContentController.Content = new DictionaryControl(_viewModel);
                 MainContentController1.Content = new ExtentedWordsControl(_viewModel);
+                TextContentController.Content = new TextControl(_viewModel);
                 break;
         }
         UpdateLayout();

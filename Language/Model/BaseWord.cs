@@ -1,4 +1,6 @@
-﻿namespace Language.Model;
+﻿using System.Text.Json.Serialization;
+
+namespace Language.Model;
 
 public class BaseWord
 {

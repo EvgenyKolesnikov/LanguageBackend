@@ -144,7 +144,6 @@ public class AdminController : ControllerBase
     
   
     
-
     /// <summary>
     /// Добавить текст
     /// </summary>
@@ -155,5 +154,28 @@ public class AdminController : ControllerBase
     {
         await _textService.AddText(text);
         return Ok();
+    }
+
+    /// <summary>
+    /// Получить текста
+    /// </summary>
+    /// <returns></returns>
+    [HttpGet("Text")]
+    public async Task<IActionResult> GetTexts()
+    {
+        var response = await _textService.GetTexts();
+        return Ok(response);
+    }
+
+    /// <summary>
+    /// Получить слова по тексту
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    [HttpGet("Text/{id}")]
+    public async Task<IActionResult> GetWordsByText(int id)
+    {
+        var response = await _textService.GetWordsByText(id);
+        return Ok(response);
     }
 }
