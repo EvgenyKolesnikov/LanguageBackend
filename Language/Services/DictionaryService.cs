@@ -44,7 +44,7 @@ public class DictionaryService
         return response;
     }
 
-    public async Task AddWordInBaseDictionary(string word, string translation)
+    public async Task<BaseWord> AddWordInBaseDictionary(string word, string translation)
     {
         var entity = new BaseWord()
         {
@@ -52,13 +52,14 @@ public class DictionaryService
             Translation = translation.ToLower()
         };
 
-        if (await _dbContext.BaseWords.AnyAsync(i => i.Word == word.ToLower()))
+        if (await _dbContext.BaseWords.AnyAsync(i => i.Word == word.ToLower().Trim()))
         {
-            throw new Exception("Word already exists");
+            throw new Exception("Слово уже есть в словаре");
         }
 
-        await _dbContext.BaseWords.AddAsync(entity);
+        var response = await _dbContext.BaseWords.AddAsync(entity);
         await _dbContext.SaveChangesAsync();
+        return response.Entity;
     }
 
     public async Task AddWordInExtentedDictionary(string word, string baseWord)

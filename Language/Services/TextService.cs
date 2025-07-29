@@ -1,6 +1,7 @@
 ﻿using Language.Database;
 using Language.Dictionary.Responses;
 using Language.Model;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace Language.Services;
@@ -16,7 +17,7 @@ public class TextService
     }
     
     
-    public async Task AddText(string text)
+    public async Task<TextDto> AddText(string text)
     {
         var words = text.Split(" ");
         
@@ -46,8 +47,9 @@ public class TextService
             Dictionary = dict
         };
         
-        await _dbContext.Texts.AddAsync(entity);
+        var response = await _dbContext.Texts.AddAsync(entity);
         await _dbContext.SaveChangesAsync();
+        return new TextDto(response.Entity);
     }
 
     public async Task<ICollection<Text>> GetTexts()
@@ -61,5 +63,17 @@ public class TextService
         var text = await _dbContext.Texts.Include(i => i.Dictionary).FirstOrDefaultAsync(i => i.Id == textId);
         var response = new GetWordsByTextResponse(text);
         return response;
+    }
+
+    public async Task DeleteText(int id)
+    {
+        var text = await _dbContext.Texts.FirstOrDefaultAsync(i => i.Id == id);
+        if (text == null)
+        {
+            throw new Exception("Объект не существует");
+        }
+        
+        _dbContext.Texts.Remove(text);
+        await _dbContext.SaveChangesAsync();
     }
 }

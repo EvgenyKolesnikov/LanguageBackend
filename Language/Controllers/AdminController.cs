@@ -40,17 +40,32 @@ public class AdminController : ControllerBase
     {
         try
         {
-            await _dictionaryService.AddWordInBaseDictionary(request.Word, request.Translation);
+            var response = await _dictionaryService.AddWordInBaseDictionary(request.Word, request.Translation);
+            return Ok(response);
         }
         catch (Exception e)
         {
             return BadRequest(e.Message);
         }
-        
-
-        return Ok();
     }
 
+    /// <summary>
+    /// Редактировать слово словаря
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    [HttpPut("Dictionary/{id}")]
+    public async Task<IActionResult> EditDictionary(int id, EditBaseWordRequest request)
+    {
+        var wordToUpdate = await _dbContext.BaseWords.FindAsync(id);
+        if (wordToUpdate == null) return NotFound();
+        
+        wordToUpdate.Word = request.Word;
+        wordToUpdate.Translation = request.Translation;
+        
+        await _dbContext.SaveChangesAsync();
+        return Ok(wordToUpdate);
+    }
     
     /// <summary>
     /// Получить все слова из словаря
@@ -61,6 +76,25 @@ public class AdminController : ControllerBase
     {
         var response = await _dbContext.BaseWords.ToListAsync();
         return Ok(response);
+    }
+
+    /// <summary>
+    /// Удалить слово из словаря
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    [HttpDelete("Dictionary/{id}")]
+    public async Task<IActionResult> DeleteBaseWord(int id)
+    {
+        var baseWord = await _dbContext.BaseWords.FirstOrDefaultAsync(i => i.Id == id);
+        if (baseWord == null)
+        {
+            return NotFound();
+        }
+        
+        _dbContext.BaseWords.Remove(baseWord);
+        await _dbContext.SaveChangesAsync();
+        return Ok();
     }
 
     
@@ -150,10 +184,10 @@ public class AdminController : ControllerBase
     /// <param name="text"></param>
     /// <returns></returns>
     [HttpPost("Text")]
-    public async Task<IActionResult> AddText(string text)
+    public async Task<IActionResult> AddText([FromBody] string text)
     {
-        await _textService.AddText(text);
-        return Ok();
+        var response = await _textService.AddText(text);
+        return Ok(response);
     }
 
     /// <summary>
@@ -177,5 +211,53 @@ public class AdminController : ControllerBase
     {
         var response = await _textService.GetWordsByText(id);
         return Ok(response);
+    }
+
+    /// <summary>
+    /// Изменить текст
+    /// </summary>
+    /// <param name="userId"></param>
+    /// <returns></returns>
+    [HttpPut("Text/{id}")]
+    public async Task<IActionResult> EditText(int id, EditTextRequest request)
+    {
+        var textToUpdate = await _dbContext.Texts.FindAsync(id);
+        if (textToUpdate == null) return NotFound();
+        
+        textToUpdate.Content = request.Content;
+        
+        await _dbContext.SaveChangesAsync();
+        
+        return Ok(textToUpdate);
+    }
+
+    /// <summary>
+    /// Удалить текст
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    [HttpDelete("Text/{id}")]
+    public async Task<IActionResult> DeleteText(int id)
+    {
+        try
+        {
+            await _textService.DeleteText(id);
+            return Ok();
+        }
+        catch (Exception e)
+        {
+            return BadRequest(e.Message);
+        }
+    }
+
+    /// <summary>
+    /// Process
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    [HttpPost("Text/Process/{id}")]
+    public async Task<IActionResult> ProcessText(int id)
+    {
+        return Ok();
     }
 }

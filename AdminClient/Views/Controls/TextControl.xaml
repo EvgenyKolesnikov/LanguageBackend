@@ -5,16 +5,16 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:local="clr-namespace:AdminClient.Views.Controls"
              mc:Ignorable="d"
-             d:DesignHeight="300" d:DesignWidth="500">
+             d:DesignHeight="300" d:DesignWidth="800">
     <Grid>
          <StackPanel>
             
         <StackPanel Orientation="Horizontal" Margin="0 5">
-                <TextBox Width="90" Text="{Binding AddExtentedWordRequest.Word, UpdateSourceTrigger=PropertyChanged}" Margin="0 0 5 0"/>
-                <Button Width="100" Content="Добавить текст" Command="{Binding AddExtentedWordCommand}"/>
+                <TextBox Width="380" Height="100" Text="{Binding AddedText, UpdateSourceTrigger=PropertyChanged}" Margin="0 0 5 0"/>
+                <Button Width="100" Content="Добавить текст" Command="{Binding AddTextCommand}"/>
         </StackPanel>   
             
-        <ListView ItemsSource="{Binding Texts}" Width="500"  Margin="0 5" HorizontalAlignment="Left">
+        <ListView Height="300" ItemsSource="{Binding Texts}" Width="380"  Margin="0 5" HorizontalAlignment="Left">
             <ListView.View>
                 <GridView>
                     <GridViewColumn Header="Слово" Width="140" DisplayMemberBinding="{Binding Content }" />
@@ -30,7 +30,7 @@
                     <GridViewColumn >
                         <GridViewColumn.CellTemplate >
                             <DataTemplate >
-                                <Button x:Name="EditButton" Content="Edit" Height="25" Width="40" Command="{Binding DataContext.OpenEditExtentedWordForm,RelativeSource={RelativeSource Mode=FindAncestor,AncestorType={x:Type ListView}}}" CommandParameter="{Binding RelativeSource={RelativeSource Self}}"/>
+                                <Button x:Name="EditButton" Content="Edit" Height="25" Width="40" Command="{Binding DataContext.OpenEditTextForm,RelativeSource={RelativeSource Mode=FindAncestor,AncestorType={x:Type ListView}}}" CommandParameter="{Binding RelativeSource={RelativeSource Self}}"/>
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
@@ -38,7 +38,15 @@
                     <GridViewColumn >
                         <GridViewColumn.CellTemplate >
                             <DataTemplate >
-                                <Button x:Name="EditButton" Content="Delete" Height="25" Width="40" Command="{Binding DataContext.DeleteExtentedWordCommand,RelativeSource={RelativeSource Mode=FindAncestor,AncestorType={x:Type ListView}}}" CommandParameter="{Binding RelativeSource={RelativeSource Self}}"/>
+                                <Button x:Name="EditButton" Content="Delete" Height="25" Width="40" Command="{Binding DataContext.DeleteTextCommand,RelativeSource={RelativeSource Mode=FindAncestor,AncestorType={x:Type ListView}}}" CommandParameter="{Binding RelativeSource={RelativeSource Self}}"/>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    
+                    <GridViewColumn >
+                        <GridViewColumn.CellTemplate >
+                            <DataTemplate >
+                                <Button x:Name="EditButton" Content="Process" Height="25" Width="45" Command="{Binding DataContext.ProcessTextCommand,RelativeSource={RelativeSource Mode=FindAncestor,AncestorType={x:Type ListView}}}" CommandParameter="{Binding RelativeSource={RelativeSource Self}}"/>
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
@@ -46,8 +54,11 @@
                 </GridView>
             </ListView.View>
         </ListView>
-        
-        
+             
+             
+        <StackPanel Orientation="Horizontal" Margin="0 5">
+            <TextBox Width="380" Height="100" Text="{Binding CurrentText, UpdateSourceTrigger=PropertyChanged}" Margin="0 0 5 0"/>
+        </StackPanel>  
             
         </StackPanel>
     </Grid>

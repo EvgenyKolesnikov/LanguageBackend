@@ -12,11 +12,21 @@
                 
                 <StackPanel>
                     
-                 <Button Width="150" Height="40" Margin="0 5"  HorizontalAlignment="Left" Command="{Binding OpenAddWaiterFormCommand}">Добавить слово</Button>
-                
-                <ListView ItemsSource="{Binding BaseWords}">
+                    <StackPanel Orientation="Horizontal" Margin="5 5" HorizontalAlignment="Left">
+                        <TextBlock Text="Слово:    " Margin="5 5"/>
+                        <TextBox Width="90" Text="{Binding AddWordRequest.Word, UpdateSourceTrigger=PropertyChanged}"/>
+                    </StackPanel>   
                     
-                    <ListView.View>
+                    <StackPanel Orientation="Horizontal" Margin="5 5" HorizontalAlignment="Left">
+                        <TextBlock Text="Перевод:" Margin="5 5"/>
+                        <TextBox Width="90" Text="{Binding AddWordRequest.Translation, UpdateSourceTrigger=PropertyChanged}"/>
+                    </StackPanel>
+                    
+                    
+                    <Button Width="100" Content="Добавить слово" Command="{Binding AddBaseWordCommand}" Margin="5 5" HorizontalAlignment="Left"/>
+                <ListView ItemsSource="{Binding BaseWords}" Height="300"  Width="330">
+                    
+                    <ListView.View >
                         <GridView>
                                 <GridViewColumn Header="Слово" Width="46" DisplayMemberBinding="{Binding Path=Word, Mode=TwoWay}" />
                                 <GridViewColumn Header="Перевод" Width="60" DisplayMemberBinding="{Binding Path=Translation, Mode=TwoWay}" />
@@ -24,7 +34,7 @@
                                 <GridViewColumn >
                                     <GridViewColumn.CellTemplate >
                                         <DataTemplate >
-                                            <Button x:Name="DeleteButton" Content="Extend" Height="25" Width="40" Command="{Binding DataContext.ExtentedWordsCommand,RelativeSource={RelativeSource Mode=FindAncestor,AncestorType={x:Type ListView}}}" CommandParameter="{Binding RelativeSource={RelativeSource Self}}"/>
+                                            <Button x:Name="DeleteButton" Content="Select" Height="25" Width="40" Command="{Binding DataContext.ExtentedWordsCommand,RelativeSource={RelativeSource Mode=FindAncestor,AncestorType={x:Type ListView}}}" CommandParameter="{Binding RelativeSource={RelativeSource Self}}"/>
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
@@ -32,7 +42,7 @@
                             <GridViewColumn >
                                 <GridViewColumn.CellTemplate >
                                     <DataTemplate >
-                                        <Button x:Name="EditButton" Content="Edit" Height="25" Width="40" Command="{Binding DataContext.OpenEditWordFormCommand,RelativeSource={RelativeSource Mode=FindAncestor,AncestorType={x:Type ListView}}}" CommandParameter="{Binding RelativeSource={RelativeSource Self}}"/>
+                                        <Button x:Name="EditButton" Content="Edit" Height="25" Width="40" Command="{Binding DataContext.OpenEditBaseWordForm,RelativeSource={RelativeSource Mode=FindAncestor,AncestorType={x:Type ListView}}}" CommandParameter="{Binding RelativeSource={RelativeSource Self}}"/>
                                     </DataTemplate>
                                 </GridViewColumn.CellTemplate>
                             </GridViewColumn>
@@ -40,7 +50,7 @@
                             <GridViewColumn >
                                 <GridViewColumn.CellTemplate >
                                     <DataTemplate >
-                                        <Button x:Name="DeleteButton" Content="Delete" Height="25" Width="40" Command="{Binding DataContext.DeleteWordCommand,RelativeSource={RelativeSource Mode=FindAncestor,AncestorType={x:Type ListView}}}" CommandParameter="{Binding RelativeSource={RelativeSource Self}}"/>
+                                        <Button x:Name="DeleteButton" Content="Delete" Height="25" Width="40" Command="{Binding DataContext.DeleteBaseWordCommand,RelativeSource={RelativeSource Mode=FindAncestor,AncestorType={x:Type ListView}}}" CommandParameter="{Binding RelativeSource={RelativeSource Self}}"/>
                                     </DataTemplate>
                                 </GridViewColumn.CellTemplate>
                             </GridViewColumn>

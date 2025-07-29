@@ -9,6 +9,7 @@ using Microsoft.Extensions.Options;
 using System.ComponentModel;
 using System.Net.Http.Json;
 using AdminClient.Views.Windows;
+using Language.Dictionary;
 using Language.Dictionary.Requests;
 using Language.Dictionary.Responses;
 
@@ -28,6 +29,15 @@ public class MainViewModel : BaseViewModel
     public TriggerCommand<object> SaveExtentedWordCommand { get; set; }
     public TriggerCommand<object> OpenEditWordForm { get; set; }
     
+    // Base Word
+    public string NewBaseWord { get; set; }
+    public TriggerCommand AddBaseWordCommand { get; set; }
+    public TriggerCommand<object> OpenEditBaseWordForm { get; set; }
+    public TriggerCommand EditBaseWordCommand { get; set; }
+    public TriggerCommand<object> DeleteBaseWordCommand { get; set; }
+    public EditBaseWordRequest EditBaseWordRequest { get; set; } = new();
+    public AddWordRequest AddWordRequest { get; set; } = new();
+    
     // Extented Words
     public TriggerCommand<object> ExtentedWordsCommand { get; set; }
     public TriggerCommand AddExtentedWordCommand { get; set; }
@@ -39,7 +49,15 @@ public class MainViewModel : BaseViewModel
     
     // Texts
     
+    public string CurrentText { get; set; }
+    public string AddedText { get; set; }
     public TriggerCommand<object> GetWordByTextCommand { get; set; }
+    public TriggerCommand AddTextCommand { get; set; }
+    public TriggerCommand<object> DeleteTextCommand { get; set; }
+    public TriggerCommand<object> OpenEditTextForm { get; set; }
+    public EditTextRequest EditTextRequest { get; set; } = new();
+    public TriggerCommand EditTextCommand { get; set; }
+    public TriggerCommand<object> ProcessTextCommand { get; set; }
     
     
     public MainViewModel(IOptions<BackendOptions> options,IHttpClientFactory clientFactory) 
@@ -72,6 +90,11 @@ public class MainViewModel : BaseViewModel
 
     private void InitializeCommands()
     {
+        DeleteBaseWordCommand = new TriggerCommand<object>(DeleteBaseWord);
+        OpenEditBaseWordForm = new TriggerCommand<object>(EditBaseWordForm);
+        EditBaseWordCommand = new TriggerCommand(EditBaseWord);
+        AddBaseWordCommand = new TriggerCommand(AddBaseWord);
+        
         ExtentedWordsCommand = new TriggerCommand<object>(GetExtentedWords);
         AddExtentedWordCommand =  new TriggerCommand(AddExtentedWord);
         OpenEditExtentedWordForm = new TriggerCommand<object>(EditExtentedWordForm);
@@ -79,6 +102,11 @@ public class MainViewModel : BaseViewModel
         DeleteExtentedWordCommand =  new TriggerCommand<object>(DeleteExtentedWord);
         
         GetWordByTextCommand = new TriggerCommand<object>(GetWordByText);
+        AddTextCommand = new TriggerCommand(AddText);
+        DeleteTextCommand = new TriggerCommand<object>(DeleteText);
+        OpenEditTextForm = new TriggerCommand<object>(EditTextForm);
+        EditTextCommand = new TriggerCommand(EditText);
+        ProcessTextCommand = new TriggerCommand<object>(ProcessText);
     }
     
   
@@ -92,6 +120,69 @@ public class MainViewModel : BaseViewModel
         
         return responseObj;
     }
+
+    private async void DeleteBaseWord(object word)
+    {
+        var Datacontext = ((Button)word).DataContext;
+        if (Datacontext is BaseWord _baseWord)
+        {
+            var response = await _httpClient.DeleteAsync(_options.Host + $"/api/Admin/Dictionary/{_baseWord.Id}");
+            if (response.IsSuccessStatusCode)
+            {
+                BaseWords.Remove(_baseWord);
+            }
+        }
+    }
+    
+    private async void AddBaseWord()
+    {
+        var response = await _httpClient.PostAsJsonAsync(_options.Host + "/api/Admin/Dictionary", AddWordRequest);
+        
+        if (response.IsSuccessStatusCode)
+        {
+            var responseObj = await ResponseHandler.DeserializeAsync<BaseWord>(response);
+            BaseWords.Add(responseObj);
+        }
+        else
+        {
+            MessageBox.Show(await response.Content.ReadAsStringAsync());
+        }
+        AddWordRequest = new AddWordRequest();
+        RaisePropertyChanged(nameof(AddWordRequest));
+    }
+    
+    private async void EditBaseWordForm(object word)
+    {
+        var Datacontext = ((Button)word).DataContext;
+        if(Datacontext is BaseWord _word) // rework
+        {
+            EditBaseWordRequest.Id = _word.Id;
+            EditBaseWordRequest.Word = _word.Word;
+            EditBaseWordRequest.Translation = _word.Translation;
+        }
+
+       
+        var win = new EditBaseWord(this);
+        win.Show();  
+    }
+
+    private async void EditBaseWord()
+    {
+        var response = await _httpClient.PutAsJsonAsync(_options.Host + $"/api/Admin/Dictionary/{EditBaseWordRequest.Id}", EditBaseWordRequest);
+        if (response.IsSuccessStatusCode)
+        {
+            var responseObj = await ResponseHandler.DeserializeAsync<BaseWord>(response);
+            
+            var objToEdit = BaseWords.FirstOrDefault(i => i.Id == responseObj.Id);
+            
+            if (objToEdit != null)
+            {
+                int i = BaseWords.IndexOf(objToEdit);
+                BaseWords[i] = responseObj;
+            }
+        }
+    }
+    
 
     // удалить расширенное слово
     private async void DeleteExtentedWord(object word)
@@ -199,14 +290,75 @@ public class MainViewModel : BaseViewModel
                 };
                 BaseWords.Add(baseWord);
             }
+            CurrentText = _text.Content;
+            RaisePropertyChanged(nameof(CurrentText));
+        }
+    }
+
+    // Удалить текст
+    private async void DeleteText(object text)
+    {
+        var Datacontext = ((Button)text).DataContext;
+        if (Datacontext is Text _text)
+        {
+            var response = await _httpClient.DeleteAsync(_options.Host + $"/api/Admin/Text/{_text.Id}");
+            if (response.IsSuccessStatusCode)
+            {
+                Texts.Remove(_text);
+            }
+        }
+    }
+
+   
+
+    private async void AddText()
+    {
+        var response = await _httpClient.PostAsJsonAsync(_options.Host + "/api/Admin/Text", AddedText);
+        if (response.IsSuccessStatusCode)
+        {
+            var responseObj = await ResponseHandler.DeserializeAsync<Text>(response);
+            Texts.Add(responseObj);
         }
     }
     
-
-    // Для обновления UI при изменении NewExtentedWord
-    public event PropertyChangedEventHandler PropertyChanged;
-    protected void OnPropertyChanged(string propertyName)
+    private async void EditTextForm(object text)
     {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        var Datacontext = ((Button)text).DataContext;
+        if(Datacontext is Text _text) // rework
+        {
+            EditTextRequest.Id = _text.Id;
+            EditTextRequest.Content = _text.Content;
+        }
+
+       
+        var win = new EditText(this);
+        win.Show();  
+    }
+    
+    private async void EditText()
+    {
+        var response = await _httpClient.PutAsJsonAsync(_options.Host + $"/api/Admin/Text/{EditTextRequest.Id}", EditTextRequest);
+        if (response.IsSuccessStatusCode)
+        {
+            var responseObj = await ResponseHandler.DeserializeAsync<Text>(response);
+            
+            var objToEdit = Texts.FirstOrDefault(i => i.Id == responseObj.Id);
+            
+            if (objToEdit != null)
+            {
+                int i = Texts.IndexOf(objToEdit);
+                Texts[i] = responseObj;
+            }
+        }
+    }
+    
+    private async void ProcessText(object text)
+    {
+        var Datacontext = ((Button)text).DataContext;
+        if (Datacontext is Text _text)
+        {
+            var response = await _httpClient.PostAsync(_options.Host + $"/api/Admin/Text/Process/{_text.Id}", new StringContent(""));;
+           
+        }
     }
 }
