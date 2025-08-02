@@ -6,6 +6,9 @@ public class GetWordsByTextResponse
 {
     public int Id { get; set; }
     public string Content { get; set; }
+    
+    public int WordsCount { get; set; }
+    public int WordsProcessed { get; set; }
     public List<BaseWordDto> Words { get; set; } = new();
     
     public GetWordsByTextResponse(){}

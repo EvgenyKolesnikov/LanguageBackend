@@ -23,7 +23,7 @@ public class MainViewModel : BaseViewModel
     public ObservableCollection<BaseWord> BaseWords { get; set; } = new ();
     public ObservableCollection<GetExtentedWords> ExtentedWords { get; set; } = new ();
     
-    public ObservableCollection<Text> Texts { get; set; } = new ();
+    public ObservableCollection<TextDto> Texts { get; set; } = new ();
     
     public string NewExtentedWord { get; set; }
     public TriggerCommand<object> SaveExtentedWordCommand { get; set; }
@@ -49,7 +49,7 @@ public class MainViewModel : BaseViewModel
     
     // Texts
     
-    public Text CurrentText { get; set; }
+    public TextDto CurrentText { get; set; }
     public string AddedText { get; set; }
     public TriggerCommand<object> GetWordByTextCommand { get; set; }
     public TriggerCommand AddTextCommand { get; set; }
@@ -142,6 +142,7 @@ public class MainViewModel : BaseViewModel
                 if (response.IsSuccessStatusCode)
                 {
                     BaseWords.Remove(_baseWord);
+                    RaisePropertyChanged(nameof(Texts));
                 }
             }
         }
@@ -281,10 +282,10 @@ public class MainViewModel : BaseViewModel
     }
     
     // Получить все слова
-    private async Task<ObservableCollection<Text>> GetTexts()
+    private async Task<ObservableCollection<TextDto>> GetTexts()
     {
         var response = await _httpClient.GetAsync(_options.Host + "/api/Admin/Text");
-        var responseObj = await ResponseHandler.DeserializeAsync<ObservableCollection<Text>>(response);
+        var responseObj = await ResponseHandler.DeserializeAsync<ObservableCollection<TextDto>>(response);
         
         return responseObj;
     }
@@ -293,7 +294,7 @@ public class MainViewModel : BaseViewModel
     private async void GetWordByText(object text)
     {
         var Datacontext = ((Button)text).DataContext;
-        if (Datacontext is Text _text)
+        if (Datacontext is TextDto _text)
         {
             var response = await _httpClient.GetAsync(_options.Host + $"/api/Admin/Text/{_text.Id}");
             var responseObj = await ResponseHandler.DeserializeAsync<GetWordsByTextResponse>(response);
@@ -318,7 +319,7 @@ public class MainViewModel : BaseViewModel
     private async void DeleteText(object text)
     {
         var Datacontext = ((Button)text).DataContext;
-        if (Datacontext is Text _text)
+        if (Datacontext is TextDto _text)
         {
             var response = await _httpClient.DeleteAsync(_options.Host + $"/api/Admin/Text/{_text.Id}");
             if (response.IsSuccessStatusCode)
@@ -335,7 +336,7 @@ public class MainViewModel : BaseViewModel
         var response = await _httpClient.PostAsJsonAsync(_options.Host + "/api/Admin/Text", AddedText);
         if (response.IsSuccessStatusCode)
         {
-            var responseObj = await ResponseHandler.DeserializeAsync<Text>(response);
+            var responseObj = await ResponseHandler.DeserializeAsync<TextDto>(response);
             Texts.Add(responseObj);
         }
     }
@@ -343,7 +344,7 @@ public class MainViewModel : BaseViewModel
     private async void EditTextForm(object text)
     {
         var Datacontext = ((Button)text).DataContext;
-        if(Datacontext is Text _text) // rework
+        if(Datacontext is TextDto _text) // rework
         {
             EditTextRequest.Id = _text.Id;
             EditTextRequest.Content = _text.Content;
@@ -359,7 +360,7 @@ public class MainViewModel : BaseViewModel
         var response = await _httpClient.PutAsJsonAsync(_options.Host + $"/api/Admin/Text/{EditTextRequest.Id}", EditTextRequest);
         if (response.IsSuccessStatusCode)
         {
-            var responseObj = await ResponseHandler.DeserializeAsync<Text>(response);
+            var responseObj = await ResponseHandler.DeserializeAsync<TextDto>(response);
             
             var objToEdit = Texts.FirstOrDefault(i => i.Id == responseObj.Id);
             
@@ -374,7 +375,7 @@ public class MainViewModel : BaseViewModel
     private async void ProcessText(object text)
     {
         var Datacontext = ((Button)text).DataContext;
-        if (Datacontext is Text _text)
+        if (Datacontext is TextDto _text)
         {
             var response = await _httpClient.PostAsync(_options.Host + $"/api/Admin/Text/Process/{_text.Id}", new StringContent(""));;
            

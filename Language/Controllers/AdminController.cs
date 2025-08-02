@@ -91,6 +91,10 @@ public class AdminController : ControllerBase
         {
             return NotFound();
         }
+
+
+        var texts = _dbContext.Texts.Where(i => i.Dictionary.Any(x => x.Id == baseWord.Id)).ToList();
+        
         
         _dbContext.BaseWords.Remove(baseWord);
         await _dbContext.SaveChangesAsync();

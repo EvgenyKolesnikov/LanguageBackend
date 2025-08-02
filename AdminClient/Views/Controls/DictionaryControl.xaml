@@ -60,43 +60,6 @@
                 </ListView>
                 </StackPanel>
             </TabItem>
-            
-            
-            
-            
-            <TabItem Header="Блюда" Height="20" VerticalAlignment="Top">
-                <StackPanel>
-                    
-                    <Button Width="150" Height="40" Margin="0 5"  HorizontalAlignment="Left" Command="{Binding OpenAddDishFormCommand}">Добавить блюдо</Button>
-                    
-                    <ListView ItemsSource="{Binding Dishes}">
-                        
-                        <ListView.View>
-                            <GridView>
-                                <GridViewColumn Header="Название" Width="46" DisplayMemberBinding="{Binding Name}" />
-                                <GridViewColumn Header="Цена" Width="60" DisplayMemberBinding="{Binding Price}" />
-
-                                <GridViewColumn >
-                                    <GridViewColumn.CellTemplate >
-                                        <DataTemplate >
-                                            <Button x:Name="EditButton" Content="Edit" Height="25" Width="40" Command="{Binding DataContext.OpenEditFormCommand,RelativeSource={RelativeSource Mode=FindAncestor,AncestorType={x:Type ListView}}}" CommandParameter="{Binding RelativeSource={RelativeSource Self}}"/>
-                                        </DataTemplate>
-                                    </GridViewColumn.CellTemplate>
-                                </GridViewColumn>
-
-                                <GridViewColumn >
-                                    <GridViewColumn.CellTemplate >
-                                        <DataTemplate >
-                                            <Button x:Name="DeleteButton" Content="Delete" Height="25" Width="40" Command="{Binding DataContext.DeleteDishCommand,RelativeSource={RelativeSource Mode=FindAncestor,AncestorType={x:Type ListView}}}" CommandParameter="{Binding RelativeSource={RelativeSource Self}}"/>
-                                        </DataTemplate>
-                                    </GridViewColumn.CellTemplate>
-                                </GridViewColumn>
-                            </GridView>
-                        </ListView.View>
-                    </ListView>
-                </StackPanel>
-            </TabItem>
-            
         </TabControl>
         
     </Grid>

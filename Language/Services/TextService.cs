@@ -30,9 +30,9 @@ public class TextService
         return new TextDto(response);
     }
 
-    public async Task<ICollection<Text>> GetTexts()
+    public async Task<ICollection<TextDto>> GetTexts()
     {
-        var response = await _dbContext.Texts.ToHashSetAsync();
+        var response = await _dbContext.Texts.Include(i => i.Dictionary).Select(i => new TextDto(i)).ToHashSetAsync();
         return response;
     }
 
@@ -101,6 +101,7 @@ public class TextService
                     Word = word.ToLower()
                 };
                 dict.Add(item);
+                
                 await _dbContext.BaseWords.AddAsync(item);
             }
         }
@@ -116,7 +117,8 @@ public class TextService
         var entity = new Model.Text()
         {
             Content = text,
-            Dictionary = dictionary
+            Dictionary = dictionary,
+            WordsCount = dictionary.Count
         };
 
         var response = await _dbContext.Texts.AddAsync(entity);

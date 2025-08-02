@@ -46,8 +46,8 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="200" />
             <ColumnDefinition Width="300"/>
-            <ColumnDefinition Width="400"/>
-            <ColumnDefinition Width="500"/>
+            <ColumnDefinition Width="280"/>
+            <ColumnDefinition Width="600"/>
         </Grid.ColumnDefinitions>
         
         <Rectangle Fill="#FF1A1A1D"/>
@@ -70,7 +70,7 @@
         </StackPanel>
         
         <StackPanel Grid.Column="2" Grid.Row="1">
-            <ContentControl Name="MainContentController1" Margin="5" MaxWidth="550" MaxHeight="{Binding ElementName=currentWindow - 200}"/>
+            <ContentControl Name="MainContentController1" Margin="5" MaxWidth="350" MaxHeight="{Binding ElementName=currentWindow }"/>
         </StackPanel>
         
         <StackPanel Grid.Column="3" Grid.Row="1">

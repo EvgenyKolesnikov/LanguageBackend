@@ -10,14 +10,29 @@
          <StackPanel>
             
         <StackPanel Orientation="Horizontal" Margin="0 5">
-                <TextBox Width="380" Height="100" Text="{Binding AddedText, UpdateSourceTrigger=PropertyChanged}" Margin="0 0 5 0"/>
+                <TextBox Width="460" Height="100" Text="{Binding AddedText, UpdateSourceTrigger=PropertyChanged}" Margin="0 0 5 0"/>
                 <Button Width="100" Content="Добавить текст" Command="{Binding AddTextCommand}"/>
         </StackPanel>   
             
-        <ListView Height="300" ItemsSource="{Binding Texts}" Width="380"  Margin="0 5" HorizontalAlignment="Left">
+        <ListView Height="300" ItemsSource="{Binding Texts}" Width="460"  Margin="0 5" HorizontalAlignment="Left">
             <ListView.View>
                 <GridView>
-                    <GridViewColumn Header="Слово" Width="140" DisplayMemberBinding="{Binding Content }" />
+                    <GridViewColumn Header="Текст" Width="140" DisplayMemberBinding="{Binding Content }" />
+                    
+                    <GridViewColumn Header="Обработано" Width="80">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock>
+                                    <TextBlock.Text>
+                                        <MultiBinding StringFormat="{}{0}/{1}">
+                                            <Binding Path="WordsProcessed"/>
+                                            <Binding Path="WordsCount"/>
+                                        </MultiBinding>
+                                    </TextBlock.Text>
+                                </TextBlock>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
                     
                     <GridViewColumn >
                         <GridViewColumn.CellTemplate >
@@ -38,7 +53,7 @@
                     <GridViewColumn >
                         <GridViewColumn.CellTemplate >
                             <DataTemplate >
-                                <Button x:Name="EditButton" Content="Delete" Height="25" Width="40" Command="{Binding DataContext.DeleteTextCommand,RelativeSource={RelativeSource Mode=FindAncestor,AncestorType={x:Type ListView}}}" CommandParameter="{Binding RelativeSource={RelativeSource Self}}"/>
+                                <Button x:Name="DeleteButton" Content="Delete" Height="25" Width="40" Command="{Binding DataContext.DeleteTextCommand,RelativeSource={RelativeSource Mode=FindAncestor,AncestorType={x:Type ListView}}}" CommandParameter="{Binding RelativeSource={RelativeSource Self}}"/>
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
@@ -46,7 +61,7 @@
                     <GridViewColumn >
                         <GridViewColumn.CellTemplate >
                             <DataTemplate >
-                                <Button x:Name="EditButton" Content="Process" Height="25" Width="45" Command="{Binding DataContext.ProcessTextCommand,RelativeSource={RelativeSource Mode=FindAncestor,AncestorType={x:Type ListView}}}" CommandParameter="{Binding RelativeSource={RelativeSource Self}}"/>
+                                <Button x:Name="ProcessButton" Content="Process" Height="25" Width="45" Command="{Binding DataContext.ProcessTextCommand,RelativeSource={RelativeSource Mode=FindAncestor,AncestorType={x:Type ListView}}}" CommandParameter="{Binding RelativeSource={RelativeSource Self}}"/>
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
@@ -57,7 +72,7 @@
              
              
         <StackPanel Orientation="Horizontal" Margin="0 5">
-            <TextBox Width="380" Height="100" Text="{Binding CurrentText.Content, UpdateSourceTrigger=PropertyChanged}" Margin="0 0 5 0"/>
+            <TextBox Width="460" Height="100" Text="{Binding CurrentText.Content, UpdateSourceTrigger=PropertyChanged}" Margin="0 0 5 0"/>
         </StackPanel>  
             
         </StackPanel>
