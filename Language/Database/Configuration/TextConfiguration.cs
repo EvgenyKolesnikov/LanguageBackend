@@ -10,6 +10,6 @@ public class TextConfiguration : IEntityTypeConfiguration<Text>
     {
         builder.HasKey(i => i.Id);
         
-        builder.HasMany(i => i.Dictionary).WithMany(i => i.TextsId);
+        builder.HasMany(i => i.Dictionary).WithMany(i => i.Texts);
     }
 }

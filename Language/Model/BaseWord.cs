@@ -10,5 +10,5 @@ public class BaseWord
     public List<User> Users { get; set; }
     
     public IEnumerable<ExtentedWord>? ExtentedWords { get; set; }
-    public IEnumerable<Text>? TextsId { get; set; }
+    public IEnumerable<Text>? Texts { get; set; }
 }

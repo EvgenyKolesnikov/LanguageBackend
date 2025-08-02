@@ -148,6 +148,15 @@ public class AdminController : ControllerBase
             Word = request.Word,
         };
         
+        var baseWord = await _dbContext.BaseWords.FirstOrDefaultAsync(i => i.Word == request.Word.ToLower());
+
+        if (baseWord.Id == request.BaseIdWord) return BadRequest("Word already exists");
+        
+        if (baseWord != null && baseWord.Id != entity.BaseWordId)
+        {
+            _dbContext.BaseWords.Remove(baseWord);
+        }
+        
         var addedEntity = await _dbContext.ExtentedWords.AddAsync(entity);
         await _dbContext.SaveChangesAsync();
         
@@ -249,6 +258,27 @@ public class AdminController : ControllerBase
             return BadRequest(e.Message);
         }
     }
+    
+    /// <summary>
+    /// Отвязать слово от текста
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    [HttpDelete("Text/{textId}/Word/{wordId}")]
+    public async Task<IActionResult> DeleteBaseWordFromText(int textId, int wordId)
+    {
+        try
+        {
+            await _textService.UnattachWordFromText(textId, wordId);
+            return Ok();
+        }
+        catch (Exception e)
+        {
+            return BadRequest(e.Message);
+        }
+    }
+    
+    
 
     /// <summary>
     /// Process
@@ -258,6 +288,7 @@ public class AdminController : ControllerBase
     [HttpPost("Text/Process/{id}")]
     public async Task<IActionResult> ProcessText(int id)
     {
-        return Ok();
+        var response = await _textService.ProcessText(id);
+        return Ok(response);
     }
 }

@@ -49,7 +49,7 @@ public class MainViewModel : BaseViewModel
     
     // Texts
     
-    public string CurrentText { get; set; }
+    public Text CurrentText { get; set; }
     public string AddedText { get; set; }
     public TriggerCommand<object> GetWordByTextCommand { get; set; }
     public TriggerCommand AddTextCommand { get; set; }
@@ -79,6 +79,8 @@ public class MainViewModel : BaseViewModel
         {
             BaseWords = await GetWords();
             Texts = await GetTexts();
+            CurrentText = null;
+            RaisePropertyChanged(nameof(CurrentText));
             RaisePropertyChanged(nameof(BaseWords));
             RaisePropertyChanged(nameof(Texts));
         }
@@ -126,10 +128,21 @@ public class MainViewModel : BaseViewModel
         var Datacontext = ((Button)word).DataContext;
         if (Datacontext is BaseWord _baseWord)
         {
-            var response = await _httpClient.DeleteAsync(_options.Host + $"/api/Admin/Dictionary/{_baseWord.Id}");
-            if (response.IsSuccessStatusCode)
+            if (CurrentText == null)
             {
-                BaseWords.Remove(_baseWord);
+                var response = await _httpClient.DeleteAsync(_options.Host + $"/api/Admin/Dictionary/{_baseWord.Id}");
+                if (response.IsSuccessStatusCode)
+                {
+                    BaseWords.Remove(_baseWord);
+                }
+            }
+            else
+            {
+                var response = await _httpClient.DeleteAsync(_options.Host + $"/api/Admin/Text/{CurrentText.Id}/Word/{_baseWord.Id}");
+                if (response.IsSuccessStatusCode)
+                {
+                    BaseWords.Remove(_baseWord);
+                }
             }
         }
     }
@@ -226,6 +239,12 @@ public class MainViewModel : BaseViewModel
             var responseObj = await ResponseHandler.DeserializeAsync<GetExtentedWords>(response);
             ExtentedWords.Add(responseObj);
         }
+        else
+        {
+            MessageBox.Show(await response.Content.ReadAsStringAsync());
+        }
+        AddExtentedWordRequest = new AddExtentedWord();
+        RaisePropertyChanged(nameof(AddExtentedWordRequest));
     }
 
     private async void EditExtentedWordForm(object word)
@@ -290,7 +309,7 @@ public class MainViewModel : BaseViewModel
                 };
                 BaseWords.Add(baseWord);
             }
-            CurrentText = _text.Content;
+            CurrentText = _text;
             RaisePropertyChanged(nameof(CurrentText));
         }
     }
