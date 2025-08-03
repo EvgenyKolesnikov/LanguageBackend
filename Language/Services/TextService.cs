@@ -33,7 +33,10 @@ public class TextService
     public async Task<ICollection<TextDto>> GetTexts()
     {
         var response = await _dbContext.Texts.Include(i => i.Dictionary).Select(i => new TextDto(i)).ToHashSetAsync();
-        return response;
+        
+        // Перемешиваем тексты в случайном порядке
+        var random = new Random();
+        return response.OrderBy(x => random.Next()).ToList();
     }
 
     public async Task<GetWordsByTextResponse> GetWordsByText(int textId)
@@ -82,7 +85,8 @@ public class TextService
         var words = text.SplitToWords();
         
         var baseWords = await _dbContext.BaseWords.Include(i => i.ExtentedWords).ToHashSetAsync();
-        var dict = new List<Model.BaseWord>();
+        var dict = new List<BaseWord>();
+        var dictToAdd = new List<BaseWord>();
         
         foreach (var word in words)
         {
@@ -100,12 +104,17 @@ public class TextService
                 {
                     Word = word.ToLower()
                 };
-                dict.Add(item);
+                dictToAdd.Add(item);
                 
-                await _dbContext.BaseWords.AddAsync(item);
+               
             }
         }
         
+        dictToAdd = dictToAdd.DistinctBy(i => i.Word, StringComparer.OrdinalIgnoreCase).ToList();
+        dict = dict.Union(dictToAdd).DistinctBy(i => i.Word).ToList();
+        
+        await _dbContext.BaseWords.AddRangeAsync(dictToAdd);
+        await _dbContext.SaveChangesAsync();
         return dict;
     }
     
