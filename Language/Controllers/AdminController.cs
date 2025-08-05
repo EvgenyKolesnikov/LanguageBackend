@@ -20,13 +20,15 @@ public class AdminController : ControllerBase
     public readonly MainDbContext _dbContext;
     public readonly DictionaryService _dictionaryService;
     public readonly TextService _textService;
+    public readonly TranslateService _translateService;
     
-    public AdminController(IOptions<JwtOptions> options, MainDbContext dbcontext, DictionaryService dictionaryService, TextService textService)
+    public AdminController(IOptions<JwtOptions> options, MainDbContext dbcontext, DictionaryService dictionaryService, TextService textService, TranslateService translateService)
     {
         _options = options.Value;
         _dbContext = dbcontext;
         _dictionaryService = dictionaryService;
         _textService = textService;
+        _translateService = translateService;
     }
 
 
@@ -91,9 +93,6 @@ public class AdminController : ControllerBase
         {
             return NotFound();
         }
-
-
-        var texts = _dbContext.Texts.Where(i => i.Dictionary.Any(x => x.Id == baseWord.Id)).ToList();
         
         
         _dbContext.BaseWords.Remove(baseWord);
@@ -294,5 +293,24 @@ public class AdminController : ControllerBase
     {
         var response = await _textService.ProcessText(id);
         return Ok(response);
+    }
+
+
+    /// <summary>
+    /// Translate
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    [HttpPost("Word/Translate/{id}")]
+    public async Task<IActionResult> TranslateWord(int id)
+    {
+        var word = await _dbContext.BaseWords.FirstOrDefaultAsync(i => i.Id == id);
+        
+        var response = await _translateService.Translate(word.Word);
+        
+        word.Translation = response.responseData.translatedText;
+        await _dbContext.SaveChangesAsync();
+        
+        return Ok(word);
     }
 }

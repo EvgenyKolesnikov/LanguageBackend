@@ -58,6 +58,7 @@ public class MainViewModel : BaseViewModel
     public EditTextRequest EditTextRequest { get; set; } = new();
     public TriggerCommand EditTextCommand { get; set; }
     public TriggerCommand<object> ProcessTextCommand { get; set; }
+    public TriggerCommand<object> TranslateWordCommand { get; set; }
     
     
     public MainViewModel(IOptions<BackendOptions> options,IHttpClientFactory clientFactory) 
@@ -109,9 +110,34 @@ public class MainViewModel : BaseViewModel
         OpenEditTextForm = new TriggerCommand<object>(EditTextForm);
         EditTextCommand = new TriggerCommand(EditText);
         ProcessTextCommand = new TriggerCommand<object>(ProcessText);
+
+        TranslateWordCommand = new TriggerCommand<object>(Translate);
     }
-    
-  
+
+
+
+
+    private async void Translate(object word)
+    {
+        var Datacontext = ((Button)word).DataContext;
+        if (Datacontext is BaseWord _baseWord)
+        {
+            var response = await _httpClient.PostAsync(_options.Host + $"/api/Admin/Word/Translate/{_baseWord.Id}",new StringContent(""));
+            if (response.IsSuccessStatusCode)
+            {
+                var responseObj = await ResponseHandler.DeserializeAsync<BaseWord>(response);
+                var objToEdit = BaseWords.FirstOrDefault(i => i.Id == responseObj.Id);
+            
+                if (objToEdit != null)
+                {
+                    int i = BaseWords.IndexOf(objToEdit);
+                    BaseWords[i] = responseObj;
+                }
+            }
+        }
+
+        
+    }
     
     
     // Получить все слова

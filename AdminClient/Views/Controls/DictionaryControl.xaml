@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:local="clr-namespace:AdminClient.Views.Controls"
              mc:Ignorable="d"
-             d:DesignHeight="300" d:DesignWidth="300">
+             d:DesignHeight="300" d:DesignWidth="500">
     <Grid>
            <TabControl>
             <TabItem Header="Словарь">
@@ -14,22 +14,22 @@
                     
                     <StackPanel Orientation="Horizontal" Margin="5 5" HorizontalAlignment="Left">
                         <TextBlock Text="Слово:    " Margin="5 5"/>
-                        <TextBox Width="90" Text="{Binding AddWordRequest.Word, UpdateSourceTrigger=PropertyChanged}"/>
+                        <TextBox MinWidth="150" Text="{Binding AddWordRequest.Word, UpdateSourceTrigger=PropertyChanged}"/>
                     </StackPanel>   
                     
                     <StackPanel Orientation="Horizontal" Margin="5 5" HorizontalAlignment="Left">
                         <TextBlock Text="Перевод:" Margin="5 5"/>
-                        <TextBox Width="90" Text="{Binding AddWordRequest.Translation, UpdateSourceTrigger=PropertyChanged}"/>
+                        <TextBox MinWidth="150" Text="{Binding AddWordRequest.Translation, UpdateSourceTrigger=PropertyChanged}"/>
                     </StackPanel>
                     
                     
                     <Button Width="100" Content="Добавить слово" Command="{Binding AddBaseWordCommand}" Margin="5 5" HorizontalAlignment="Left"/>
-                <ListView ItemsSource="{Binding BaseWords}" Height="300"  Width="330">
+                <ListView ItemsSource="{Binding BaseWords}" Height="300"  Width="480">
                     
                     <ListView.View >
                         <GridView>
-                                <GridViewColumn Header="Слово" Width="46" DisplayMemberBinding="{Binding Path=Word, Mode=TwoWay}" />
-                                <GridViewColumn Header="Перевод" Width="60" DisplayMemberBinding="{Binding Path=Translation, Mode=TwoWay}" />
+                                <GridViewColumn Header="Слово" Width="100" DisplayMemberBinding="{Binding Path=Word, Mode=TwoWay}" />
+                                <GridViewColumn Header="Перевод" Width="100" DisplayMemberBinding="{Binding Path=Translation, Mode=TwoWay}" />
                            
                                 <GridViewColumn >
                                     <GridViewColumn.CellTemplate >
@@ -54,6 +54,14 @@
                                     </DataTemplate>
                                 </GridViewColumn.CellTemplate>
                             </GridViewColumn>
+                                
+                                <GridViewColumn >
+                                    <GridViewColumn.CellTemplate >
+                                        <DataTemplate >
+                                            <Button x:Name="DeleteButton" Content="Translate" Height="25" Width="55" Command="{Binding DataContext.TranslateWordCommand,RelativeSource={RelativeSource Mode=FindAncestor,AncestorType={x:Type ListView}}}" CommandParameter="{Binding RelativeSource={RelativeSource Self}}"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
                             
                         </GridView>
                     </ListView.View>
@@ -61,6 +69,5 @@
                 </StackPanel>
             </TabItem>
         </TabControl>
-        
     </Grid>
 </UserControl>

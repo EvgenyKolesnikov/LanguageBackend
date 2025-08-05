@@ -27,6 +27,7 @@ namespace Language
             services.AddEndpointsApiExplorer();
             
             services.AddEndpointsApiExplorer();
+            services.AddHttpClient();
             services.AddSwaggerGen(options =>
             {
                 options.SwaggerDoc("v1", new OpenApiInfo
@@ -46,6 +47,7 @@ namespace Language
             services.AddTransient<DictionaryService>();
             services.AddTransient<AuthService>();
             services.AddTransient<TextService>();
+            services.AddTransient<TranslateService>();
 
         }
 
