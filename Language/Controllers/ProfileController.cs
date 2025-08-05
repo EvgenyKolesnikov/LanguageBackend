@@ -98,4 +98,24 @@ public class ProfileController : ControllerBase
         
         return Ok(response);
     }
+
+    
+    /// <summary>
+    /// Удалить слово из словаря
+    /// </summary>
+    /// <returns></returns>
+    [CustomAuthorize]
+    [HttpDelete("UserDictionary/{wordId}")]
+    public async Task<IActionResult> DeleteWordByUser(int wordId)
+    {
+        var authHeader = Request.Headers["Authorization"].FirstOrDefault();
+        var userIdClaim = authHeader.GetClaimFromJwtToken(ClaimTypes.NameIdentifier);
+        
+        if (userIdClaim == null)
+            return BadRequest("UserId claim not found in token");
+        
+        await _dictionaryService.DeleteWordByUser(new Guid(userIdClaim), wordId);
+        
+        return Ok();
+    }
 }

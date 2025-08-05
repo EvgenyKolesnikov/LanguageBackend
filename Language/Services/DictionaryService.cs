@@ -89,4 +89,34 @@ public class DictionaryService
         
         return response;
     }
+
+    public async Task DeleteWordByUser(Guid userId, int wordId)
+    {
+        // Используем FindAsync для поиска по первичному ключу (более эффективно)
+        var word = await _dbContext.BaseWords.FindAsync(wordId);
+        if (word == null)
+        {
+            throw new KeyNotFoundException($"Word with id {wordId} not found");
+        }
+
+        // Загружаем пользователя с его словарем, но только нужные данные
+        var user = await _dbContext.Users
+            .Include(u => u.Dictionary)
+            .Where(u => u.Id == userId)
+            .Select(u => new
+            {
+                User = u,
+                Dictionary = u.Dictionary.Where(d => d.Id == wordId).FirstOrDefault()
+            })
+            .FirstOrDefaultAsync();
+        if (user == null)
+            throw new KeyNotFoundException($"User with id {userId} not found");
+
+        if (user.Dictionary == null)
+            throw new InvalidOperationException($"Word with id {wordId} not found in user's dictionary");
+        
+        
+        user.User.Dictionary.Remove(word);
+        await _dbContext.SaveChangesAsync();
+    }
 }
