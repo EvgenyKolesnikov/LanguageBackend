@@ -20,17 +20,13 @@ public class MainViewModel : BaseViewModel
     private readonly BackendOptions _options;
     private readonly HttpClient _httpClient;
 
-    public ObservableCollection<BaseWord> BaseWords { get; set; } = new ();
+    public ObservableCollection<BaseWordDto> BaseWords { get; set; } = new ();
     public ObservableCollection<GetExtentedWords> ExtentedWords { get; set; } = new ();
     
     public ObservableCollection<TextDto> Texts { get; set; } = new ();
     
-    public string NewExtentedWord { get; set; }
-    public TriggerCommand<object> SaveExtentedWordCommand { get; set; }
-    public TriggerCommand<object> OpenEditWordForm { get; set; }
-    
     // Base Word
-    public string NewBaseWord { get; set; }
+    public BaseWordDto CurrentBaseWord { get; set; }
     public TriggerCommand AddBaseWordCommand { get; set; }
     public TriggerCommand<object> OpenEditBaseWordForm { get; set; }
     public TriggerCommand EditBaseWordCommand { get; set; }
@@ -39,7 +35,7 @@ public class MainViewModel : BaseViewModel
     public AddWordRequest AddWordRequest { get; set; } = new();
     
     // Extented Words
-    public TriggerCommand<object> ExtentedWordsCommand { get; set; }
+    public TriggerCommand<object> SelectWordCommand { get; set; }
     public TriggerCommand AddExtentedWordCommand { get; set; }
     public TriggerCommand<object> OpenEditExtentedWordForm { get; set; }
     public TriggerCommand EditExtentedWordCommand { get; set; }
@@ -60,6 +56,7 @@ public class MainViewModel : BaseViewModel
     public TriggerCommand<object> ProcessTextCommand { get; set; }
     public TriggerCommand<object> TranslateWordCommand { get; set; }
     
+    public bool HealthCheck { get; set; }
     
     public MainViewModel(IOptions<BackendOptions> options,IHttpClientFactory clientFactory) 
     {
@@ -67,6 +64,7 @@ public class MainViewModel : BaseViewModel
         _httpClient = clientFactory.CreateClient("HttpClient");
         InitializeCommands();
         InitializeData();
+        // Устанавливаем начальное значение для тестирования
     }
 
     public void Update()
@@ -81,13 +79,19 @@ public class MainViewModel : BaseViewModel
             BaseWords = await GetWords();
             Texts = await GetTexts();
             CurrentText = null;
+            CurrentBaseWord = null;
+            HealthCheck = true;
+            ExtentedWords.Clear();
+            RaisePropertyChanged(nameof(CurrentBaseWord));
             RaisePropertyChanged(nameof(CurrentText));
             RaisePropertyChanged(nameof(BaseWords));
             RaisePropertyChanged(nameof(Texts));
+            RaisePropertyChanged(nameof(HealthCheck));
+            
         }
         catch (Exception e)
         {
-            MessageBox.Show("Ошибка соединения с Сервером"); 
+            HealthCheck = false;
         }
     }
 
@@ -98,7 +102,7 @@ public class MainViewModel : BaseViewModel
         EditBaseWordCommand = new TriggerCommand(EditBaseWord);
         AddBaseWordCommand = new TriggerCommand(AddBaseWord);
         
-        ExtentedWordsCommand = new TriggerCommand<object>(GetExtentedWords);
+        SelectWordCommand = new TriggerCommand<object>(SelectBaseWord);
         AddExtentedWordCommand =  new TriggerCommand(AddExtentedWord);
         OpenEditExtentedWordForm = new TriggerCommand<object>(EditExtentedWordForm);
         EditExtentedWordCommand = new TriggerCommand(EditExtentedWord);
@@ -120,12 +124,12 @@ public class MainViewModel : BaseViewModel
     private async void Translate(object word)
     {
         var Datacontext = ((Button)word).DataContext;
-        if (Datacontext is BaseWord _baseWord)
+        if (Datacontext is BaseWordDto _baseWord)
         {
             var response = await _httpClient.PostAsync(_options.Host + $"/api/Admin/Word/Translate/{_baseWord.Id}",new StringContent(""));
             if (response.IsSuccessStatusCode)
             {
-                var responseObj = await ResponseHandler.DeserializeAsync<BaseWord>(response);
+                var responseObj = await ResponseHandler.DeserializeAsync<BaseWordDto>(response);
                 var objToEdit = BaseWords.FirstOrDefault(i => i.Id == responseObj.Id);
             
                 if (objToEdit != null)
@@ -135,16 +139,14 @@ public class MainViewModel : BaseViewModel
                 }
             }
         }
-
-        
     }
     
     
     // Получить все слова
-    private async Task<ObservableCollection<BaseWord>> GetWords()
+    private async Task<ObservableCollection<BaseWordDto>> GetWords()
     {
         var response = await _httpClient.GetAsync(_options.Host + "/api/Admin/Dictionary");
-        var responseObj = await ResponseHandler.DeserializeAsync<ObservableCollection<BaseWord>>(response);
+        var responseObj = await ResponseHandler.DeserializeAsync<ObservableCollection<BaseWordDto>>(response);
         
         return responseObj;
     }
@@ -152,7 +154,7 @@ public class MainViewModel : BaseViewModel
     private async void DeleteBaseWord(object word)
     {
         var Datacontext = ((Button)word).DataContext;
-        if (Datacontext is BaseWord _baseWord)
+        if (Datacontext is BaseWordDto _baseWord)
         {
             if (CurrentText == null)
             {
@@ -180,7 +182,7 @@ public class MainViewModel : BaseViewModel
         
         if (response.IsSuccessStatusCode)
         {
-            var responseObj = await ResponseHandler.DeserializeAsync<BaseWord>(response);
+            var responseObj = await ResponseHandler.DeserializeAsync<BaseWordDto>(response);
             BaseWords.Add(responseObj);
         }
         else
@@ -211,7 +213,7 @@ public class MainViewModel : BaseViewModel
         var response = await _httpClient.PutAsJsonAsync(_options.Host + $"/api/Admin/Dictionary/{EditBaseWordRequest.Id}", EditBaseWordRequest);
         if (response.IsSuccessStatusCode)
         {
-            var responseObj = await ResponseHandler.DeserializeAsync<BaseWord>(response);
+            var responseObj = await ResponseHandler.DeserializeAsync<BaseWordDto>(response);
             
             var objToEdit = BaseWords.FirstOrDefault(i => i.Id == responseObj.Id);
             
@@ -239,19 +241,22 @@ public class MainViewModel : BaseViewModel
     }
     
     // Получить все расширенные слова
-    private async void GetExtentedWords(object word)
+    private async void SelectBaseWord(object word)
     {
         var Datacontext = ((Button)word).DataContext;
-        if (Datacontext is BaseWord _baseWord)
+        if (Datacontext is BaseWordDto _baseWord)
         {
             var response = await _httpClient.GetAsync(_options.Host + $"/api/Admin/GetExtentedWord?baseWord={_baseWord.Word}");
             var responseObj = await ResponseHandler.DeserializeAsync<ObservableCollection<GetExtentedWords>>(response);
+            CurrentBaseWord = _baseWord;
             ExtentedWords.Clear();
-            foreach (var item in responseObj)
+
+            foreach (var extentedWord in responseObj)
             {
-                ExtentedWords.Add(item);
+                ExtentedWords.Add(extentedWord);
             }
             
+            RaisePropertyChanged(nameof(CurrentBaseWord));
             AddExtentedWordRequest.BaseIdWord = _baseWord.Id;
         }
     }
@@ -328,7 +333,7 @@ public class MainViewModel : BaseViewModel
 
             foreach (var word in responseObj.Words)
             {
-                var baseWord = new BaseWord()
+                var baseWord = new BaseWordDto()
                 {
                     Id = word.Id,
                     Word = word.Word,
@@ -407,4 +412,5 @@ public class MainViewModel : BaseViewModel
            
         }
     }
+    
 }

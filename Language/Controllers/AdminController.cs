@@ -76,7 +76,9 @@ public class AdminController : ControllerBase
     [HttpGet("Dictionary")]
     public async Task<IActionResult> GetDictionary()
     {
-        var response = await _dbContext.BaseWords.ToListAsync();
+        var baseWords = await _dbContext.BaseWords.Include(i => i.Properties).ToListAsync();
+
+        var response = baseWords.Select(i => new BaseWordDto(i));
         return Ok(response);
     }
 
@@ -110,8 +112,10 @@ public class AdminController : ControllerBase
     [HttpGet("GetExtentedWord")]
     public async Task<IActionResult> GetExtentedWord(string baseWord)
     {
-        var response = await _dbContext.ExtentedWords.Include(i => i.BaseWord)
+        var response = await _dbContext.ExtentedWords
             .Where(i => i.BaseWord.Word == baseWord.ToLower()).Select(i => new GetExtentedWords(i)).ToListAsync();
+        
+        
         return Ok(response);
     }
     
@@ -153,7 +157,7 @@ public class AdminController : ControllerBase
         
         var baseWord = await _dbContext.BaseWords.FirstOrDefaultAsync(i => i.Word == request.Word.ToLower());
 
-        if (baseWord.Id == request.BaseIdWord) return BadRequest("Word already exists");
+        if (baseWord?.Id == request.BaseIdWord) return BadRequest("Word already exists");
         
         if (baseWord != null && baseWord.Id != entity.BaseWordId)
         {
@@ -309,8 +313,24 @@ public class AdminController : ControllerBase
         var response = await _translateService.Translate(word.Word);
         
         word.Translation = response.responseData.translatedText;
+
+        foreach (var item in response.matches)
+        {
+            word.Properties.Add(new WordProperties(){Translation = item.translation});
+        }
+        
         await _dbContext.SaveChangesAsync();
         
         return Ok(word);
+    }
+    
+    /// <summary>
+    /// Add WordProperty
+    /// </summary>
+    /// <returns></returns>
+    [HttpPost("AddWordProperty")]
+    public async Task AddWordProperty(AddWordProperty request)
+    {
+        
     }
 }

@@ -17,6 +17,7 @@ namespace Language.Database
         public DbSet<BaseWord> BaseWords { get; set; }
         public DbSet<ExtentedWord> ExtentedWords { get; set; }
         public DbSet<Text> Texts { get; set; }
+        public DbSet<WordProperties>  WordProperties { get; set; }
         
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

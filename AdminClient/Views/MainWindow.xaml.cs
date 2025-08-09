@@ -26,6 +26,7 @@ public partial class MainWindow : Window
     {
         _viewModel = viewModel;
         InitializeComponent();
+        DataContext = _viewModel; // Добавляем DataContext
         Update();
     }
     
@@ -41,7 +42,8 @@ public partial class MainWindow : Window
                 break;
             default:
                 MainContentController.Content = new DictionaryControl(_viewModel);
-                MainContentController1.Content = new ExtentedWordsControl(_viewModel);
+                ExtentedWordsController.Content = new ExtentedWordsControl(_viewModel);
+                WordPropertiesController.Content = new WordPropertiesControl(_viewModel);
                 TextContentController.Content = new TextControl(_viewModel);
                 break;
         }

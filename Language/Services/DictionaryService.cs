@@ -44,18 +44,28 @@ public class DictionaryService
         return response;
     }
 
-    public async Task<BaseWord> AddWordInBaseDictionary(string word, string translation)
+    public async Task<BaseWord> AddWordInBaseDictionary(string word, string translation, string? partOfSpeech = null)
     {
         var entity = new BaseWord()
         {
             Word = word.ToLower(),
-            Translation = translation.ToLower()
+            Translation = translation,
+            Properties = new List<WordProperties>()
+            {
+              new () {Translation = translation.ToLower(), PartOfSpeech = partOfSpeech}  
+            }
         };
 
-        if (await _dbContext.BaseWords.AnyAsync(i => i.Word == word.ToLower().Trim()))
+        
+        var wordDb = await _dbContext.BaseWords.FirstOrDefaultAsync(i => i.Word == word.ToLower());
         {
-            throw new Exception("Слово уже есть в словаре");
+            if (wordDb != null && 
+                wordDb.Properties.FirstOrDefault(i => i.Translation.ToLower() == translation.ToLower() && i.PartOfSpeech == partOfSpeech) == null)
+            {
+                throw new Exception("Слово уже есть в словаре");
+            }
         }
+       
 
         var response = await _dbContext.BaseWords.AddAsync(entity);
         await _dbContext.SaveChangesAsync();

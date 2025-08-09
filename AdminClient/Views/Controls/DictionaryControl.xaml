@@ -11,7 +11,6 @@
             <TabItem Header="Словарь">
                 
                 <StackPanel>
-                    
                     <StackPanel Orientation="Horizontal" Margin="5 5" HorizontalAlignment="Left">
                         <TextBlock Text="Слово:    " Margin="5 5"/>
                         <TextBox MinWidth="150" Text="{Binding AddWordRequest.Word, UpdateSourceTrigger=PropertyChanged}"/>
@@ -22,8 +21,12 @@
                         <TextBox MinWidth="150" Text="{Binding AddWordRequest.Translation, UpdateSourceTrigger=PropertyChanged}"/>
                     </StackPanel>
                     
-                    
-                    <Button Width="100" Content="Добавить слово" Command="{Binding AddBaseWordCommand}" Margin="5 5" HorizontalAlignment="Left"/>
+                    <StackPanel Orientation="Horizontal" Margin="5 5" HorizontalAlignment="Left">
+                        <Button Width="100" Content="Добавить слово" Command="{Binding AddBaseWordCommand}" Margin="5 5" HorizontalAlignment="Left"/>
+                        <TextBlock Text="Выбранное слово: " VerticalAlignment="Center"/>
+                        <TextBlock Text="{Binding CurrentBaseWord.Word}" VerticalAlignment="Center" FontWeight="Bold"/> 
+                    </StackPanel>
+                   
                 <ListView ItemsSource="{Binding BaseWords}" Height="300"  Width="480">
                     
                     <ListView.View >
@@ -34,7 +37,7 @@
                                 <GridViewColumn >
                                     <GridViewColumn.CellTemplate >
                                         <DataTemplate >
-                                            <Button x:Name="DeleteButton" Content="Select" Height="25" Width="40" Command="{Binding DataContext.ExtentedWordsCommand,RelativeSource={RelativeSource Mode=FindAncestor,AncestorType={x:Type ListView}}}" CommandParameter="{Binding RelativeSource={RelativeSource Self}}"/>
+                                            <Button x:Name="DeleteButton" Content="Select" Height="25" Width="40" Command="{Binding DataContext.SelectWordCommand,RelativeSource={RelativeSource Mode=FindAncestor,AncestorType={x:Type ListView}}}" CommandParameter="{Binding RelativeSource={RelativeSource Self}}"/>
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>

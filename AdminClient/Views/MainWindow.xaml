@@ -4,8 +4,9 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:AdminClient"
+        xmlns:converters="clr-namespace:AdminClient.Converters"
         mc:Ignorable="d"
-        Title="MainWindow" Height="750" Width="1800">
+        Title="MainWindow" Height="750" Width="2000">
     <Window.Resources>
         
         <Style TargetType="Button" x:Key="MenuButton">
@@ -41,13 +42,19 @@
             </Style.Triggers>
         </Style>
 
+        <!-- Конвертер для текста HealthCheck -->
+        <converters:HealthCheckTextConverter x:Key="HealthCheckConverter"/>
+        <converters:HealthCheckColorConverter x:Key="HealthCheckColorConverter"/>
+        <converters:NullToBoolConverter x:Key="NullToBoolConverter"/>
+
     </Window.Resources>
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="200" />
             <ColumnDefinition Width="500"/>
-            <ColumnDefinition Width="280"/>
-            <ColumnDefinition Width="600"/>
+            <ColumnDefinition Width="500"/>
+            <ColumnDefinition Width="700"/>
+          
         </Grid.ColumnDefinitions>
         
         <Rectangle Fill="#FF1A1A1D"/>
@@ -63,14 +70,23 @@
         <StackPanel Grid.Column="0" Margin="5 40 0 0">
             <Button x:Name="AdminButton" Content="Словарь" Click="MenuClick"  Style="{StaticResource MenuButton}"  Tag="Page1"/>
             <Button Content="Пользователи" Click="MenuClick"  Style="{StaticResource MenuButton}" Tag="Page2"/>
+           
+            <Button x:Name="HealthCheckButton" 
+                    Content="{Binding HealthCheck, Converter={StaticResource HealthCheckConverter}}" 
+                    Style="{StaticResource MenuButton}"
+                    Background="{Binding HealthCheck, Converter={StaticResource HealthCheckColorConverter}}"
+                    Command="{Binding ToggleHealthCheckCommand}"/>
         </StackPanel>
         
         <StackPanel Grid.Column="1" Grid.Row="1">
             <ContentControl Name="MainContentController" Margin="5" MaxWidth="550" MaxHeight="{Binding ElementName=currentWindow - 200}"/>
+            <ContentControl Name="WordPropertiesController" Margin="5" MaxWidth="550" MaxHeight="{Binding ElementName=currentWindow - 200}"/>
         </StackPanel>
         
+        
         <StackPanel Grid.Column="2" Grid.Row="1">
-            <ContentControl Name="MainContentController1" Margin="5" MaxWidth="350" MaxHeight="{Binding ElementName=currentWindow }"/>
+            <ContentControl Name="ExtentedWordsController" Margin="5" MaxWidth="450" MaxHeight="{Binding ElementName=currentWindow }"
+                            IsEnabled="{Binding CurrentBaseWord, Converter={StaticResource NullToBoolConverter}}"/>
         </StackPanel>
         
         <StackPanel Grid.Column="3" Grid.Row="1">

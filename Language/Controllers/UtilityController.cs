@@ -38,12 +38,17 @@ public class UtilityController: ControllerBase
         await _dictionaryService.AddWordInBaseDictionary("table", "стол");
         await _dictionaryService.AddWordInExtentedDictionary("dogs", "dog");
         
+        await _dictionaryService.AddWordInBaseDictionary("like", "нравится", "verb");
+        await _dictionaryService.AddWordInBaseDictionary("like", "как", "preposition");
+        
         await _dictionaryService.AddWordToUser("dogs", userJenya);
         await _dictionaryService.AddWordToUser("table", userJenya);
         await _dictionaryService.AddWordToUser("dog", userVasya);
         
 
         await _textService.AddText("Dog on the table");
+        await _textService.AddText("I like Dog");
+        await _textService.AddText("like a boss");
         
         return Ok();   
     }

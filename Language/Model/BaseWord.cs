@@ -7,6 +7,8 @@ public class BaseWord
     public int Id { get; set; }
     public string Word { get; set; }
     public string? Translation { get; set; }
+
+    public List<WordProperties> Properties { get; set; } = new();
     public List<User> Users { get; set; }
     
     public IEnumerable<ExtentedWord>? ExtentedWords { get; set; }
