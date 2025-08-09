@@ -12,6 +12,7 @@ using AdminClient.Views.Windows;
 using Language.Dictionary;
 using Language.Dictionary.Requests;
 using Language.Dictionary.Responses;
+using Language.Dictionary.Responses.Translate;
 
 namespace AdminClient.ViewModel;
 
@@ -21,6 +22,7 @@ public class MainViewModel : BaseViewModel
     private readonly HttpClient _httpClient;
 
     public ObservableCollection<BaseWordDto> BaseWords { get; set; } = new ();
+    public ObservableCollection<WordPropertiesDto> WordProperties { get; set; } = new();
     public ObservableCollection<GetExtentedWords> ExtentedWords { get; set; } = new ();
     
     public ObservableCollection<TextDto> Texts { get; set; } = new ();
@@ -32,7 +34,7 @@ public class MainViewModel : BaseViewModel
     public TriggerCommand EditBaseWordCommand { get; set; }
     public TriggerCommand<object> DeleteBaseWordCommand { get; set; }
     public EditBaseWordRequest EditBaseWordRequest { get; set; } = new();
-    public AddWordRequest AddWordRequest { get; set; } = new();
+    public AddWordProperty AddWordRequest { get; set; } = new();
     
     // Extented Words
     public TriggerCommand<object> SelectWordCommand { get; set; }
@@ -55,6 +57,11 @@ public class MainViewModel : BaseViewModel
     public TriggerCommand EditTextCommand { get; set; }
     public TriggerCommand<object> ProcessTextCommand { get; set; }
     public TriggerCommand<object> TranslateWordCommand { get; set; }
+    
+    // Word Property
+    public AddWordProperty AddWordPropertyRequest { get; set; } = new();
+    public TriggerCommand AddWordPropertyCommand { get; set; }
+    public TriggerCommand<object> DeleteWordPropertyCommand { get; set; }
     
     public bool HealthCheck { get; set; }
     
@@ -116,6 +123,8 @@ public class MainViewModel : BaseViewModel
         ProcessTextCommand = new TriggerCommand<object>(ProcessText);
 
         TranslateWordCommand = new TriggerCommand<object>(Translate);
+        DeleteWordPropertyCommand = new TriggerCommand<object>(DeleteWordProperty);
+        AddWordPropertyCommand = new TriggerCommand(AddWordProperty);
     }
 
 
@@ -137,6 +146,38 @@ public class MainViewModel : BaseViewModel
                     int i = BaseWords.IndexOf(objToEdit);
                     BaseWords[i] = responseObj;
                 }
+            }
+        }
+    }
+
+    private async void AddWordProperty()
+    {
+        AddWordRequest.BaseWordId = CurrentBaseWord.Id;
+        var response = await _httpClient.PostAsJsonAsync(_options.Host + "/api/Admin/WordProperty", AddWordRequest);
+        
+        if (response.IsSuccessStatusCode)
+        {
+            var responseObj = await ResponseHandler.DeserializeAsync<WordPropertiesDto>(response);
+            WordProperties.Add(responseObj);
+        }
+        else
+        {
+            MessageBox.Show(await response.Content.ReadAsStringAsync());
+        }
+        
+        RaisePropertyChanged(nameof(WordProperties));
+    }
+
+    private async void DeleteWordProperty(object word)
+    {
+        var Datacontext = ((Button)word).DataContext;
+        if (Datacontext is WordPropertiesDto wordProperty)
+        {
+            var response = await _httpClient.DeleteAsync(_options.Host + $"/api/Admin/DeleteWordProperty/{wordProperty.Id}");
+            if (response.IsSuccessStatusCode)
+            {
+                WordProperties.Remove(wordProperty);
+               
             }
         }
     }
@@ -189,7 +230,7 @@ public class MainViewModel : BaseViewModel
         {
             MessageBox.Show(await response.Content.ReadAsStringAsync());
         }
-        AddWordRequest = new AddWordRequest();
+        AddWordRequest = new AddWordProperty();
         RaisePropertyChanged(nameof(AddWordRequest));
     }
     
@@ -240,7 +281,7 @@ public class MainViewModel : BaseViewModel
         }
     }
     
-    // Получить все расширенные слова
+    // Выделить слово
     private async void SelectBaseWord(object word)
     {
         var Datacontext = ((Button)word).DataContext;
@@ -250,10 +291,16 @@ public class MainViewModel : BaseViewModel
             var responseObj = await ResponseHandler.DeserializeAsync<ObservableCollection<GetExtentedWords>>(response);
             CurrentBaseWord = _baseWord;
             ExtentedWords.Clear();
+            WordProperties.Clear();
 
             foreach (var extentedWord in responseObj)
             {
                 ExtentedWords.Add(extentedWord);
+            }
+
+            foreach (var property in CurrentBaseWord.Properties)
+            {
+                WordProperties.Add(property);
             }
             
             RaisePropertyChanged(nameof(CurrentBaseWord));
@@ -264,7 +311,7 @@ public class MainViewModel : BaseViewModel
     // добавить расширенное слово
     private async void AddExtentedWord()
     {
-        var response = await _httpClient.PostAsJsonAsync(_options.Host + "/api/Admin/ExtentedWord", AddExtentedWordRequest);
+        var response = await _httpClient.PostAsJsonAsync(_options.Host + "/api/Admin/ExtentedWord", AddWordPropertyRequest);
         
         if (response.IsSuccessStatusCode)
         {
@@ -359,9 +406,6 @@ public class MainViewModel : BaseViewModel
             }
         }
     }
-
-   
-
     private async void AddText()
     {
         var response = await _httpClient.PostAsJsonAsync(_options.Host + "/api/Admin/Text", AddedText);
@@ -371,7 +415,6 @@ public class MainViewModel : BaseViewModel
             Texts.Add(responseObj);
         }
     }
-    
     private async void EditTextForm(object text)
     {
         var Datacontext = ((Button)text).DataContext;
@@ -385,7 +428,6 @@ public class MainViewModel : BaseViewModel
         var win = new EditText(this);
         win.Show();  
     }
-    
     private async void EditText()
     {
         var response = await _httpClient.PutAsJsonAsync(_options.Host + $"/api/Admin/Text/{EditTextRequest.Id}", EditTextRequest);
@@ -402,7 +444,6 @@ public class MainViewModel : BaseViewModel
             }
         }
     }
-    
     private async void ProcessText(object text)
     {
         var Datacontext = ((Button)text).DataContext;

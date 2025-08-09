@@ -2,6 +2,7 @@
 using Language.Dictionary;
 using Language.Dictionary.Requests;
 using Language.Dictionary.Responses;
+using Language.Dictionary.Responses.Translate;
 using Language.Model;
 using Language.Services;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -328,9 +329,40 @@ public class AdminController : ControllerBase
     /// Add WordProperty
     /// </summary>
     /// <returns></returns>
-    [HttpPost("AddWordProperty")]
-    public async Task AddWordProperty(AddWordProperty request)
+    [HttpPost("WordProperty")]
+    public async Task<IActionResult> AddWordProperty(AddWordProperty request)
     {
+        var word = await _dbContext.BaseWords.FirstOrDefaultAsync(i => i.Id == request.BaseWordId);
         
+        if (word == null) return NotFound("Word not found");
+        
+        var entity = new WordProperties()
+        {
+            Translation = request.Translation,
+            PartOfSpeech = request.PartOfSpeech,
+            Word = word
+        };
+        
+        await _dbContext.WordProperties.AddAsync(entity);
+        await _dbContext.SaveChangesAsync();
+        
+        var response = new WordPropertiesDto(entity);
+        return Ok(response) ;
+    }
+
+    /// <summary>
+    /// Delete Word Property
+    /// </summary>
+    /// <param name="id"></param>
+    [HttpDelete("DeleteWordProperty/{id}")]
+    public async Task<IActionResult> DeleteWordProperty(int id)
+    {
+        var proprety = await _dbContext.WordProperties.FirstOrDefaultAsync(i => i.Id == id);
+        if (proprety == null) return NotFound();
+        
+        
+        _dbContext.WordProperties.Remove(proprety);
+        await _dbContext.SaveChangesAsync();
+        return Ok();
     }
 }

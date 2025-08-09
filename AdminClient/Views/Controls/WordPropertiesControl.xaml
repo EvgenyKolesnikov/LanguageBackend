@@ -9,11 +9,11 @@
     <Grid>
         <StackPanel>
             <StackPanel Orientation="Horizontal" Margin="0 5">
-                <TextBox Width="90" Text="{Binding AddExtentedWordRequest.Word, UpdateSourceTrigger=PropertyChanged}" Margin="0 0 5 0"/>
-                <Button Width="100" Content="Добавить перевод" Command="{Binding AddExtentedWordCommand}"/>
+                <TextBox Width="90" Text="{Binding AddWordRequest.Translation, UpdateSourceTrigger=PropertyChanged}" Margin="0 0 5 0"/>
+                <Button Width="100" Content="Добавить перевод" Command="{Binding AddWordPropertyCommand}"/>
             </StackPanel>   
             
-        <ListView ItemsSource="{Binding CurrentBaseWord.Properties}" Width="480"  Margin="0 5" HorizontalAlignment="Left">
+        <ListView ItemsSource="{Binding WordProperties}" Width="480"  Margin="0 5" HorizontalAlignment="Left">
             <ListView.View>
                 <GridView>
                     <GridViewColumn Header="Перевод" Width="140" DisplayMemberBinding="{Binding Translation }" />
@@ -30,7 +30,7 @@
                     <GridViewColumn >
                         <GridViewColumn.CellTemplate >
                             <DataTemplate >
-                                <Button x:Name="EditButton" Content="Delete" Height="25" Width="40" Command="{Binding DataContext.DeleteExtentedWordCommand,RelativeSource={RelativeSource Mode=FindAncestor,AncestorType={x:Type ListView}}}" CommandParameter="{Binding RelativeSource={RelativeSource Self}}"/>
+                                <Button x:Name="EditButton" Content="Delete" Height="25" Width="40" Command="{Binding DataContext.DeleteWordPropertyCommand,RelativeSource={RelativeSource Mode=FindAncestor,AncestorType={x:Type ListView}}}" CommandParameter="{Binding RelativeSource={RelativeSource Self}}"/>
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
