@@ -311,18 +311,18 @@ public class AdminController : ControllerBase
     {
         var word = await _dbContext.BaseWords.FirstOrDefaultAsync(i => i.Id == id);
         
-        var response = await _translateService.Translate(word.Word);
+        var translate = await _translateService.Translate(word.Word);
         
-        word.Translation = response.responseData.translatedText;
+        word.Translation = translate.responseData.translatedText;
 
-        foreach (var item in response.matches)
+        foreach (var item in translate.matches)
         {
             word.Properties.Add(new WordProperties(){Translation = item.translation});
         }
         
         await _dbContext.SaveChangesAsync();
-        
-        return Ok(word);
+        var response = new BaseWordDto(word);
+        return Ok(response);
     }
     
     /// <summary>
@@ -347,6 +347,28 @@ public class AdminController : ControllerBase
         await _dbContext.SaveChangesAsync();
         
         var response = new WordPropertiesDto(entity);
+        return Ok(response) ;
+    }
+    
+    /// <summary>
+    /// Add WordProperty
+    /// </summary>
+    /// <returns></returns>
+    [HttpPut("WordProperty")]
+    public async Task<IActionResult> EditWordProperty(EditPropertyWordRequest request)
+    {
+        var word = await _dbContext.BaseWords.Include(i => i.Properties).FirstOrDefaultAsync(i => i.Id == request.BaseWordId);
+        
+        if (word == null) return NotFound("Word not found");
+        
+        var property = word.Properties.FirstOrDefault(i => i.Id == request.PropertyWordId);
+        
+        if (property == null) return NotFound("Property not found");
+        
+        property.Translation = request.Translation;
+        await _dbContext.SaveChangesAsync();
+        
+        var response = new WordPropertiesDto(property);
         return Ok(response) ;
     }
 

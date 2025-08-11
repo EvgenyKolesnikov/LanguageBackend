@@ -80,7 +80,8 @@
         
         <StackPanel Grid.Column="1" Grid.Row="1">
             <ContentControl Name="MainContentController" Margin="5" MaxWidth="550" MaxHeight="{Binding ElementName=currentWindow - 200}"/>
-            <ContentControl Name="WordPropertiesController" Margin="5" MaxWidth="550" MaxHeight="{Binding ElementName=currentWindow - 200}"/>
+            <ContentControl Name="WordPropertiesController" Margin="5" MaxWidth="550" MaxHeight="{Binding ElementName=currentWindow - 200}"
+                            IsEnabled="{Binding CurrentBaseWord, Converter={StaticResource NullToBoolConverter}}"/>
         </StackPanel>
         
         

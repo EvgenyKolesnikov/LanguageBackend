@@ -32,7 +32,8 @@ public class TextService
 
     public async Task<ICollection<TextDto>> GetTexts()
     {
-        var response = await _dbContext.Texts.Include(i => i.Dictionary).Select(i => new TextDto(i)).ToHashSetAsync();
+        var response = await _dbContext.Texts.Include(i => i.Dictionary)
+            .ThenInclude(i => i.Properties).Select(i => new TextDto(i)).ToHashSetAsync();
         
         // Перемешиваем тексты в случайном порядке
         var random = new Random();

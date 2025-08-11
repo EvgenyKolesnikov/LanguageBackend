@@ -28,7 +28,7 @@ public class MainViewModel : BaseViewModel
     public ObservableCollection<TextDto> Texts { get; set; } = new ();
     
     // Base Word
-    public BaseWordDto CurrentBaseWord { get; set; }
+    public BaseWordDto CurrentBaseWord { get; set; } = new BaseWordDto();
     public TriggerCommand AddBaseWordCommand { get; set; }
     public TriggerCommand<object> OpenEditBaseWordForm { get; set; }
     public TriggerCommand EditBaseWordCommand { get; set; }
@@ -62,7 +62,9 @@ public class MainViewModel : BaseViewModel
     public AddWordProperty AddWordPropertyRequest { get; set; } = new();
     public TriggerCommand AddWordPropertyCommand { get; set; }
     public TriggerCommand<object> DeleteWordPropertyCommand { get; set; }
-    
+    public TriggerCommand<object> OpenWordPropertyForm { get; set; }
+    public TriggerCommand EditWordPropertyCommand { get; set; }
+    public EditPropertyWordRequest EditPropertyWordRequest { get; set; } = new();
     public bool HealthCheck { get; set; }
     
     public MainViewModel(IOptions<BackendOptions> options,IHttpClientFactory clientFactory) 
@@ -124,6 +126,8 @@ public class MainViewModel : BaseViewModel
 
         TranslateWordCommand = new TriggerCommand<object>(Translate);
         DeleteWordPropertyCommand = new TriggerCommand<object>(DeleteWordProperty);
+        OpenWordPropertyForm = new TriggerCommand<object>(WordPropertyForm);
+        EditWordPropertyCommand = new TriggerCommand(EditWordProperty);
         AddWordPropertyCommand = new TriggerCommand(AddWordProperty);
     }
 
@@ -181,6 +185,39 @@ public class MainViewModel : BaseViewModel
             }
         }
     }
+    
+    private async void WordPropertyForm(object word)
+    {
+        var Datacontext = ((Button)word).DataContext;
+        if(Datacontext is WordPropertiesDto _word) // rework
+        {
+            EditPropertyWordRequest.BaseWordId = CurrentBaseWord.Id;
+            EditPropertyWordRequest.PropertyWordId = _word.Id;
+            EditPropertyWordRequest.Translation = _word.Translation;
+        }
+
+       
+        var win = new EditWordProperty(this);
+        win.Show();  
+    }
+    
+    private async void EditWordProperty()
+    {
+        var response = await _httpClient.PutAsJsonAsync(_options.Host + $"/api/Admin/WordProperty/", EditPropertyWordRequest);
+        if (response.IsSuccessStatusCode)
+        {
+            var responseObj = await ResponseHandler.DeserializeAsync<WordPropertiesDto>(response);
+            
+            var objToEdit = WordProperties.FirstOrDefault(i => i.Id == responseObj.Id);
+            
+            if (objToEdit != null)
+            {
+                int i = WordProperties.IndexOf(objToEdit);
+                WordProperties[i] = responseObj;
+            }
+        }
+    }
+    
     
     
     // Получить все слова
@@ -311,7 +348,7 @@ public class MainViewModel : BaseViewModel
     // добавить расширенное слово
     private async void AddExtentedWord()
     {
-        var response = await _httpClient.PostAsJsonAsync(_options.Host + "/api/Admin/ExtentedWord", AddWordPropertyRequest);
+        var response = await _httpClient.PostAsJsonAsync(_options.Host + "/api/Admin/ExtentedWord", AddExtentedWordRequest);
         
         if (response.IsSuccessStatusCode)
         {
