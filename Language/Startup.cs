@@ -47,7 +47,10 @@ namespace Language
             services.AddTransient<DictionaryService>();
             services.AddTransient<AuthService>();
             services.AddTransient<TextService>();
-            services.AddTransient<TranslateService>();
+            
+            services.AddTransient<ExternalTranslateService>();
+            
+            services.AddSingleton<TranslateService>();
 
         }
 

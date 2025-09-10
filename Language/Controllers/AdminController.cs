@@ -21,15 +21,15 @@ public class AdminController : ControllerBase
     public readonly MainDbContext _dbContext;
     public readonly DictionaryService _dictionaryService;
     public readonly TextService _textService;
-    public readonly TranslateService _translateService;
+    public readonly ExternalTranslateService ExternalTranslateService;
     
-    public AdminController(IOptions<JwtOptions> options, MainDbContext dbcontext, DictionaryService dictionaryService, TextService textService, TranslateService translateService)
+    public AdminController(IOptions<JwtOptions> options, MainDbContext dbcontext, DictionaryService dictionaryService, TextService textService, ExternalTranslateService externalTranslateService)
     {
         _options = options.Value;
         _dbContext = dbcontext;
         _dictionaryService = dictionaryService;
         _textService = textService;
-        _translateService = translateService;
+        ExternalTranslateService = externalTranslateService;
     }
 
 
@@ -39,11 +39,11 @@ public class AdminController : ControllerBase
     /// <param name="request"></param>
     /// <returns></returns>
     [HttpPost("Dictionary")]
-    public async Task<IActionResult> AddWordInDictionary(AddWordRequest request)
+    public async Task<IActionResult> AddWordInDictionary(AddWordProperty request)
     {
         try
         {
-            var response = await _dictionaryService.AddWordInBaseDictionary(request.Word, request.Translation);
+            var response = await _dictionaryService.AddWordInBaseDictionary(request.BaseWord, request.Translation);
             return Ok(response);
         }
         catch (Exception e)
@@ -311,7 +311,7 @@ public class AdminController : ControllerBase
     {
         var word = await _dbContext.BaseWords.FirstOrDefaultAsync(i => i.Id == id);
         
-        var translate = await _translateService.Translate(word.Word);
+        var translate = await ExternalTranslateService.Translate(word.Word);
         
         word.Translation = translate.responseData.translatedText;
 

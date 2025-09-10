@@ -157,6 +157,7 @@ public class MainViewModel : BaseViewModel
     private async void AddWordProperty()
     {
         AddWordRequest.BaseWordId = CurrentBaseWord.Id;
+        AddWordRequest.BaseWord = CurrentBaseWord.Word;
         var response = await _httpClient.PostAsJsonAsync(_options.Host + "/api/Admin/WordProperty", AddWordRequest);
         
         if (response.IsSuccessStatusCode)
