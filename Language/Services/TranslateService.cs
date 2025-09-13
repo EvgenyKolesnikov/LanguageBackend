@@ -1,5 +1,6 @@
 ﻿using Language.Database;
 using Language.Translate;
+using Microsoft.EntityFrameworkCore;
 
 namespace Language.Services;
 
@@ -7,7 +8,7 @@ public class TranslateService
 {
     
      public readonly MainDbContext _dbContext;
-     public Dictionary<string,string> _words = new();
+     public Dictionary<string, string?> _words = new();
 
 
      public TranslateService(MainDbContext dbcontext)
@@ -17,9 +18,9 @@ public class TranslateService
      }
      
     
-    public async Task<string> Translate(TranslateRequest request)
+    public async Task<TranslateResponse> Translate(TranslateRequest request)
     {
-        _words = _dbContext.BaseWords.ToDictionary(i => i.Word, i => i.Translation);
+        _words = await _dbContext.BaseWords.ToDictionaryAsync(i => i.Word, i => i.Translation);
         
         
         List<string> candidates = new List<string>();
@@ -37,10 +38,15 @@ public class TranslateService
         {
             if (_words.TryGetValue(candidate.ToLower(), out var value))
             {
-                return value;
+                var response = new TranslateResponse()
+                {
+                    Text = candidate,
+                    Translation = value 
+                };
+                return response;
             }
         }
         
-        return "";
+        return new TranslateResponse();
     }
 }

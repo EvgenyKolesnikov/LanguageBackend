@@ -50,7 +50,7 @@ namespace Language
             
             services.AddTransient<ExternalTranslateService>();
             
-            services.AddSingleton<TranslateService>();
+            services.AddTransient<TranslateService>();
 
         }
 
@@ -109,8 +109,7 @@ namespace Language
         private void AddDbContext(IServiceCollection services)
         {
             var connectionString = Configuration.GetConnectionString("local");
-
-            connectionString = "Host=localhost;Port=5433;Database=language;Username=postgres;Password=1234";
+            
             services.AddDbContext<MainDbContext>(options =>
             options.UseNpgsql(connectionString)
             .LogTo(Console.WriteLine, LogLevel.Information));
