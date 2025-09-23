@@ -50,7 +50,7 @@ namespace Language
             
             services.AddTransient<ExternalTranslateService>();
             
-            services.AddSingleton<TranslateService>();
+            services.AddTransient<TranslateService>();
 
         }
 

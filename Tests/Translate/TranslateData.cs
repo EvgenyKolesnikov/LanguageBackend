@@ -17,6 +17,7 @@ public class TranslateData : IEnumerable<object[]>
                 Sentence = "Please take off your clothes and take an apple"
             },
             "take off",
+            "take off",
             "снять"
         ];
 
@@ -29,6 +30,7 @@ public class TranslateData : IEnumerable<object[]>
                 NextWord = "an",
                 Sentence = "Please take off your clothes and take an apple"
             },
+            "take",
             "take",
             "взять"
         ];
@@ -43,6 +45,7 @@ public class TranslateData : IEnumerable<object[]>
                 Sentence = "I took it"
             },
             "took",
+            "took (take)",
             "взял"
         ];
         

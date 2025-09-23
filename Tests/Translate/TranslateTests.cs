@@ -20,13 +20,14 @@ public class TranslateTests : IClassFixture<ApplicationFactory>
     
     [Theory]
     [ClassData(typeof(TranslateData))]
-    public async Task Test1(TranslateRequest request, string expectedText, string expectedTranslation)
+    public async Task Test1(TranslateRequest request, string expectedText, string expectedAlias, string expectedTranslation)
     {
         var content = await _client.PostAsJsonAsync("/api/Translate/Translate", request);
         var response = await content.Content.ReadFromJsonAsync<TranslateResponse>();
         
         Assert.NotNull(response);
         Assert.Equal(expectedText, response.Text);
+        Assert.Equal(expectedAlias, response.Alias);
         Assert.Equal(expectedTranslation, response.Translation);
     }
 }

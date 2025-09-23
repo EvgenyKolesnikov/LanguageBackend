@@ -32,6 +32,7 @@ namespace Language.Database
         {
             Users.RemoveRange(this.Users);
             BaseWords.RemoveRange(this.BaseWords);
+            ExtentedWords.RemoveRange(this.ExtentedWords);
             Texts.RemoveRange(this.Texts);
             SaveChanges();
         }

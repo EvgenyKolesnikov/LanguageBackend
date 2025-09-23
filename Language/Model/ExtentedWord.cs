@@ -1,4 +1,6 @@
-﻿namespace Language.Model;
+﻿using Language.DTO;
+
+namespace Language.Model;
 
 public class ExtentedWord
 {

@@ -32,14 +32,17 @@ public class UtilityController: ControllerBase
         var userVasya = await _authService.RegisterUser(new RegisterUser()
             { Email = "Vasya@mail.ru", Name = "Vasya", Password = "1111" });
         
-        
+        await _dictionaryService.AddWordInBaseDictionary("like", "нравится", "verb");
+        await _dictionaryService.AddWordInBaseDictionary("like", "как", "preposition");
         
         await _dictionaryService.AddWordInBaseDictionary("dog", "собака");
         await _dictionaryService.AddWordInBaseDictionary("table", "стол");
-        await _dictionaryService.AddWordInExtentedDictionary("dogs", "dog");
+        await _dictionaryService.AddWordInBaseDictionary("take", "взять");
+        await _dictionaryService.AddWordInBaseDictionary("take off", "снять");
+        await _dictionaryService.AddWordInExtentedDictionary("dogs", "dog", "собаки");
+        await _dictionaryService.AddWordInExtentedDictionary("took", "take" ,"взял" );
         
-        await _dictionaryService.AddWordInBaseDictionary("like", "нравится", "verb");
-        await _dictionaryService.AddWordInBaseDictionary("like", "как", "preposition");
+        
         
         await _dictionaryService.AddWordToUser("dogs", userJenya);
         await _dictionaryService.AddWordToUser("table", userJenya);
@@ -47,6 +50,8 @@ public class UtilityController: ControllerBase
         
 
         await _textService.AddText("Dog on the table");
+        await _textService.AddText("Please take off clothes and take an apple");
+        await _textService.AddText("I take it. I took it");
         await _textService.AddText("I like Dog");
         await _textService.AddText("like a boss");
         

@@ -57,22 +57,31 @@ public class DictionaryService
         };
 
         
-        var wordDb = await _dbContext.BaseWords.FirstOrDefaultAsync(i => i.Word == word.ToLower());
+        var wordDb = await _dbContext.BaseWords.Include(baseWord => baseWord.Properties).FirstOrDefaultAsync(i => i.Word == word.ToLower());
+
+        if (wordDb != null)
         {
-            if (wordDb != null && 
-                wordDb.Properties.FirstOrDefault(i => i.Translation.ToLower() == translation.ToLower() && i.PartOfSpeech == partOfSpeech) == null)
+            var isExist = wordDb.Properties.FirstOrDefault(i =>
+                i.Translation.ToLower() == translation.ToLower() && i.PartOfSpeech == partOfSpeech);
+
+            if (isExist == null)
             {
-                throw new Exception("Слово уже есть в словаре");
+                 wordDb.Properties.Add(new WordProperties()
+                    { Translation = translation.ToLower(), PartOfSpeech = partOfSpeech });
+                await _dbContext.SaveChangesAsync();
+                return wordDb;
             }
+            else
+                throw new Exception("Слово уже есть в словаре");
         }
-       
+        
 
         var response = await _dbContext.BaseWords.AddAsync(entity);
         await _dbContext.SaveChangesAsync();
         return response.Entity;
     }
 
-    public async Task AddWordInExtentedDictionary(string word, string baseWord)
+    public async Task AddWordInExtentedDictionary(string word, string baseWord, string translation)
     {
         var baseWordDb = await _dbContext.BaseWords.FirstOrDefaultAsync(i => i.Word == baseWord.ToLower());
         if (baseWordDb == null) return;
@@ -80,7 +89,8 @@ public class DictionaryService
         var entity = new ExtentedWord()
         {
             Word = word.ToLower(),
-            BaseWord = baseWordDb
+            BaseWord = baseWordDb,
+            Translation = translation
         };
 
         if (await _dbContext.ExtentedWords.AnyAsync(i => i.Word == word.ToLower()))
