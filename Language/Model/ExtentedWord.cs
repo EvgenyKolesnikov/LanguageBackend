@@ -6,4 +6,5 @@ public class ExtentedWord
     public string Word { get; set; }
     public BaseWord BaseWord { get; set; }
     public int BaseWordId { get; set; }
+    public string? Translation { get; set; }
 }

@@ -54,14 +54,20 @@ public class PostgreFixture : IAsyncLifetime
         {
             var testWords = new List<BaseWord>
             {
-                new BaseWord { Word = "take", Translation = "взять" },
-                new BaseWord { Word = "take off", Translation = "снять" },
-                new BaseWord { Word = "run", Translation = "бежать" },
-                new BaseWord { Word = "swim", Translation = "плавать" },
-                new BaseWord { Word = "fly", Translation = "летать" }
+                new BaseWord { Id = 1, Word = "take", Translation = "взять" },
+                new BaseWord { Id = 2, Word = "take off", Translation = "снять" },
+                new BaseWord { Id = 3, Word = "run", Translation = "бежать" },
+                new BaseWord { Id = 4, Word = "swim", Translation = "плавать" },
+                new BaseWord { Id = 5, Word = "fly", Translation = "летать" }
             };
-
             _context.BaseWords.AddRange(testWords);
+            
+            var formWords = new List<ExtentedWord>()
+            {
+                new() { Word = "took", Translation = "взял" ,BaseWordId = 1 }
+            };
+            _context.ExtentedWords.AddRange(formWords);
+            
             await _context.SaveChangesAsync();
             
         }

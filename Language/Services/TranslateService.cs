@@ -6,7 +6,6 @@ namespace Language.Services;
 
 public class TranslateService
 {
-    
      public readonly MainDbContext _dbContext;
      public Dictionary<string, string?> _words = new();
 
@@ -21,8 +20,9 @@ public class TranslateService
     public async Task<TranslateResponse> Translate(TranslateRequest request)
     {
         _words = await _dbContext.BaseWords.ToDictionaryAsync(i => i.Word, i => i.Translation);
+        var extendedWords = await _dbContext.ExtentedWords.ToDictionaryAsync(i => i.Word, i => i.Translation);
         
-        
+        _words = new Dictionary<string, string?>(_words.Union(extendedWords));
         List<string> candidates = new List<string>();
         
         if (string.IsNullOrWhiteSpace(request.ClickedWord))

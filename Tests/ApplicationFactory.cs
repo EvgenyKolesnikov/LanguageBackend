@@ -43,16 +43,7 @@ public class ApplicationFactory : WebApplicationFactory<Program>, IAsyncLifetime
             // Добавляем новый DbContext с тестовым connection string
             services.AddDbContext<MainDbContext>(options =>
             {
-                if (_usePostgreSql && !string.IsNullOrEmpty(_connectionString))
-                {
-                    options.UseNpgsql(_connectionString);
-                    Console.WriteLine($"🔗 Используется PostgreSQL: {_connectionString}");
-                }
-                else
-                {
-                    options.UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString());
-                    Console.WriteLine("🔗 Используется InMemory база данных");
-                }
+                options.UseNpgsql(_connectionString);
             });
         });
     }

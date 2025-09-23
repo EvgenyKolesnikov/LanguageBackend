@@ -7,8 +7,8 @@ public class TranslateData : IEnumerable<object[]>
 {
     public IEnumerator<object[]> GetEnumerator()
     {
-        yield return new object[]
-        {
+        yield return
+        [
             new TranslateRequest
             {
                 ClickedWord = "take",
@@ -18,20 +18,34 @@ public class TranslateData : IEnumerable<object[]>
             },
             "take off",
             "снять"
-        };
+        ];
 
-        yield return new object[]
-        {
+        yield return
+        [
             new TranslateRequest
             {
-                ClickedWord = "run",
-                PreviousWord = "I",
-                NextWord = "fast",
-                Sentence = "I run fast every morning"
+                ClickedWord = "take",
+                PreviousWord = "and",
+                NextWord = "an",
+                Sentence = "Please take off your clothes and take an apple"
             },
-            "run",
-            "бежать"
-        };
+            "take",
+            "взять"
+        ];
+        
+        yield return
+        [
+            new TranslateRequest
+            {
+                ClickedWord = "took",
+                PreviousWord = "I",
+                NextWord = "it",
+                Sentence = "I took it"
+            },
+            "took",
+            "взял"
+        ];
+        
     }
 
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
