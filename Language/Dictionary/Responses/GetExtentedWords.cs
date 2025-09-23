@@ -7,6 +7,7 @@ public class GetExtentedWords
     public int Id { get; set; }
     public string Word { get; set; }
     public int BaseWordId { get; set; }
+    public string? Translation { get; set; }
 
     public GetExtentedWords(){}
     
@@ -15,6 +16,7 @@ public class GetExtentedWords
         Id = extendedWord.Id;
         Word = extendedWord.Word;
         BaseWordId = extendedWord.BaseWordId;
+        Translation = extendedWord.Translation;
     }
 }
 

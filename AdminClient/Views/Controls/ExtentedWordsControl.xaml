@@ -14,11 +14,11 @@
                 <Button Width="100" Content="Добавить слово" Command="{Binding AddExtentedWordCommand}"/>
         </StackPanel>   
             
-        <ListView ItemsSource="{Binding ExtentedWords}" Width="255"  Margin="0 5" HorizontalAlignment="Left">
+        <ListView ItemsSource="{Binding ExtentedWords}" Width="320"  Margin="0 5" HorizontalAlignment="Left">
             <ListView.View>
                 <GridView>
-                    <GridViewColumn Header="Слово" Width="140" DisplayMemberBinding="{Binding Word }" />
-                    
+                    <GridViewColumn Header="Слово" Width="100" DisplayMemberBinding="{Binding Word }" />
+                    <GridViewColumn Header="Перевод" Width="100" DisplayMemberBinding="{Binding Translation }" />
                     
                     <GridViewColumn >
                         <GridViewColumn.CellTemplate >

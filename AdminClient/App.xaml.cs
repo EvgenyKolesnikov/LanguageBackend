@@ -4,6 +4,7 @@ using System.Configuration;
 using System.IO;
 using System.Net.Mime;
 using System.Windows;
+using AdminClient.Common;
 using AdminClient.Options;
 using AdminClient.ViewModel;
 using Microsoft.Extensions.Configuration;
@@ -31,6 +32,7 @@ public partial class App : Application
             {
                 services.AddSingleton<MainViewModel>();
                 services.AddSingleton<MainWindow>();
+                services.AddTransient<Methods>();
                 
                 services.Configure<BackendOptions>(Configuration.GetSection("Backend"));
                 services.AddHttpClient("HttpClient");

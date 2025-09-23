@@ -8,6 +8,7 @@ using Language.Model;
 using Microsoft.Extensions.Options;
 using System.ComponentModel;
 using System.Net.Http.Json;
+using AdminClient.Common;
 using AdminClient.Views.Windows;
 using Language.Dictionary;
 using Language.Dictionary.Requests;
@@ -20,6 +21,7 @@ public class MainViewModel : BaseViewModel
 {
     private readonly BackendOptions _options;
     private readonly HttpClient _httpClient;
+    private readonly Methods _methods;
 
     public ObservableCollection<BaseWordDto> BaseWords { get; set; } = new ();
     public ObservableCollection<WordPropertiesDto> WordProperties { get; set; } = new();
@@ -67,10 +69,12 @@ public class MainViewModel : BaseViewModel
     public EditPropertyWordRequest EditPropertyWordRequest { get; set; } = new();
     public bool HealthCheck { get; set; }
     
-    public MainViewModel(IOptions<BackendOptions> options,IHttpClientFactory clientFactory) 
+    public MainViewModel(IOptions<BackendOptions> options,IHttpClientFactory clientFactory, Methods methods) 
     {
+        _methods = methods;
         _options = options.Value;
         _httpClient = clientFactory.CreateClient("HttpClient");
+        
         InitializeCommands();
         InitializeData();
         // Устанавливаем начальное значение для тестирования
@@ -173,19 +177,7 @@ public class MainViewModel : BaseViewModel
         RaisePropertyChanged(nameof(WordProperties));
     }
 
-    private async void DeleteWordProperty(object word)
-    {
-        var Datacontext = ((Button)word).DataContext;
-        if (Datacontext is WordPropertiesDto wordProperty)
-        {
-            var response = await _httpClient.DeleteAsync(_options.Host + $"/api/Admin/DeleteWordProperty/{wordProperty.Id}");
-            if (response.IsSuccessStatusCode)
-            {
-                WordProperties.Remove(wordProperty);
-               
-            }
-        }
-    }
+    
     
     private async void WordPropertyForm(object word)
     {
@@ -230,30 +222,52 @@ public class MainViewModel : BaseViewModel
         return responseObj;
     }
 
+    
+    // Удаляем слово либо из словаря, либо отвязываем его от текста
     private async void DeleteBaseWord(object word)
     {
-        var Datacontext = ((Button)word).DataContext;
-        if (Datacontext is BaseWordDto _baseWord)
-        {
-            if (CurrentText == null)
+        await _methods.DeleteItemAsync<BaseWordDto>(
+            word,
+            item => CurrentText == null
+                ? $"/api/Admin/Dictionary/{item.Id}"
+                : $"/api/Admin/Text/{CurrentText.Id}/Word/{item.Id}",
+            item =>
             {
-                var response = await _httpClient.DeleteAsync(_options.Host + $"/api/Admin/Dictionary/{_baseWord.Id}");
-                if (response.IsSuccessStatusCode)
-                {
-                    BaseWords.Remove(_baseWord);
-                }
-            }
-            else
-            {
-                var response = await _httpClient.DeleteAsync(_options.Host + $"/api/Admin/Text/{CurrentText.Id}/Word/{_baseWord.Id}");
-                if (response.IsSuccessStatusCode)
-                {
-                    BaseWords.Remove(_baseWord);
+                BaseWords.Remove(item);
+                if (CurrentText != null)
                     RaisePropertyChanged(nameof(Texts));
-                }
-            }
-        }
+            });
     }
+    
+    // удалить расширенное слово
+    private async void DeleteExtentedWord(object word)
+    {
+        await _methods.DeleteItemAsync<GetExtentedWords>(word,
+            item => $"/api/Admin/ExtentedWord/{item.Id}",
+            item => ExtentedWords.Remove(item));
+    }
+    
+    // Удалить текст
+    private async void DeleteText(object text)
+    {
+        await _methods.DeleteItemAsync<TextDto>(
+            text,
+            item => $"/api/Admin/Text/{item.Id}",
+            item => Texts.Remove(item));
+    }
+
+    private async void DeleteWordProperty(object word)
+    {
+        await _methods.DeleteItemAsync<WordPropertiesDto>(
+            word,
+            item => $"/api/Admin/DeleteWordProperty/{item.Id}",
+            item =>
+            {
+                WordProperties.Remove(item);
+                CurrentBaseWord.Properties.Remove(item);
+            });
+    }
+    
     
     private async void AddBaseWord()
     {
@@ -305,19 +319,7 @@ public class MainViewModel : BaseViewModel
     }
     
 
-    // удалить расширенное слово
-    private async void DeleteExtentedWord(object word)
-    {
-        var Datacontext = ((Button)word).DataContext;
-        if (Datacontext is GetExtentedWords _extentedWord)
-        {
-            var response = await _httpClient.DeleteAsync(_options.Host + $"/api/Admin/ExtentedWord/{_extentedWord.Id}");
-            if (response.IsSuccessStatusCode)
-            {
-                ExtentedWords.Remove(_extentedWord);
-            }
-        }
-    }
+    
     
     // Выделить слово
     private async void SelectBaseWord(object word)
@@ -431,19 +433,14 @@ public class MainViewModel : BaseViewModel
         }
     }
 
-    // Удалить текст
-    private async void DeleteText(object text)
-    {
-        var Datacontext = ((Button)text).DataContext;
-        if (Datacontext is TextDto _text)
-        {
-            var response = await _httpClient.DeleteAsync(_options.Host + $"/api/Admin/Text/{_text.Id}");
-            if (response.IsSuccessStatusCode)
-            {
-                Texts.Remove(_text);
-            }
-        }
-    }
+   
+    
+    
+    
+    
+    
+    
+    
     private async void AddText()
     {
         var response = await _httpClient.PostAsJsonAsync(_options.Host + "/api/Admin/Text", AddedText);
