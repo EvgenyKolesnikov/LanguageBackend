@@ -1,5 +1,7 @@
 ﻿using Language.Database;
+using Language.Dictionary.Responses;
 using Language.DTO;
+using Language.Model;
 using Language.Translate;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,14 +9,16 @@ namespace Language.Services;
 
 public class TranslateService
 {
-     public readonly MainDbContext _dbContext;
+     private readonly MainDbContext _dbContext;
+     private readonly ExternalTranslateService _externalTranslateService;
+     private readonly DictionaryService _dictionaryService;
      public Dictionary<string, TranslateDto?> _words = new();
-
-
-     public TranslateService(MainDbContext dbcontext)
+     
+     public TranslateService(MainDbContext dbcontext, ExternalTranslateService externalTranslateService, DictionaryService dictionaryService)
      {
          _dbContext = dbcontext;
-         
+         _externalTranslateService = externalTranslateService;
+         _dictionaryService = dictionaryService;
      }
      
     
@@ -39,6 +43,9 @@ public class TranslateService
         {
             if (_words.TryGetValue(candidate.ToLower(), out var value))
             {
+                if (value.Translation == null)
+                    continue;
+                
                 var response = new TranslateResponse()
                 {
                     Text = value.Word,
@@ -48,7 +55,57 @@ public class TranslateService
                 return response;
             }
         }
+
+        var translate = await TranslateWord(request.ClickedWord);
+
+        if (translate != null)
+        {
+            var response = new TranslateResponse()
+            {
+                Text = request.ClickedWord,
+                Alias = request.ClickedWord,
+                Translation = translate.Translation,
+            };
+            return response;
+        }
+        
         
         return new TranslateResponse();
+    }
+
+    public async Task<BaseWordDto> TranslateWord(string text)
+    {
+        var word = await _dbContext.BaseWords.FirstOrDefaultAsync(i => i.Word == text);
+        
+        if (word?.Translation != null)
+            return new BaseWordDto(word);
+        
+        var translate = await _externalTranslateService.TranslateYandex(text);
+
+        if (translate.translations.FirstOrDefault() == null)
+            return new BaseWordDto();
+        
+        
+        if (word != null)
+        {
+            word.Translation = translate.translations.FirstOrDefault()?.text;
+            if (word.Properties.FirstOrDefault(i => i.Translation == translate.translations.FirstOrDefault()?.text)  == null)
+            {
+                word.Properties.Add(new WordProperties(){Translation = word.Translation});
+            }
+          
+            await _dbContext.SaveChangesAsync();    
+            return new BaseWordDto(word);
+        }
+        
+        
+        var translation = translate.translations.FirstOrDefault()?.text;
+        if (translation != null)
+        {
+            var baseword = await _dictionaryService.AddWordInBaseDictionary(text, translation);
+            return new BaseWordDto(baseword);
+        }
+        
+        return new BaseWordDto();
     }
 }

@@ -310,15 +310,14 @@ public class AdminController : ControllerBase
     {
         var word = await _dbContext.BaseWords.FirstOrDefaultAsync(i => i.Id == id);
         
-        var translate = await ExternalTranslateService.Translate(word.Word);
+        var translate = await ExternalTranslateService.TranslateYandex(word.Word);
         
-        word.Translation = translate.responseData.translatedText;
-
-        foreach (var item in translate.matches)
-        {
-            word.Properties.Add(new WordProperties(){Translation = item.translation});
-        }
+        if (word.Properties.FirstOrDefault(i => i.Translation == translate.translations.FirstOrDefault()?.text) != null)
+            return Ok(new BaseWordDto(word));
         
+        
+        word.Translation = translate.translations.FirstOrDefault()?.text;
+        word.Properties.Add(new WordProperties(){Translation = word.Translation});
         await _dbContext.SaveChangesAsync();
         var response = new BaseWordDto(word);
         return Ok(response);

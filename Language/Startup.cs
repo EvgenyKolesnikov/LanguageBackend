@@ -2,6 +2,7 @@
 using System.Text;
 using Language.Database;
 using Language.Services;
+using Language.Services.Options;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -17,12 +18,16 @@ namespace Language
 
         public Startup(IConfiguration configuration, IWebHostEnvironment env)
         {
-            Configuration = configuration;
+            Configuration = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory()) // Укажите путь к файлу appsettings.json
+                .AddJsonFile("appsettings.json").Build();;
             Environment = env;
         }
 
         public void ConfigureServices(IServiceCollection services)
         {
+          
+            
             services.AddControllers();
             services.AddEndpointsApiExplorer();
             
@@ -49,7 +54,7 @@ namespace Language
             services.AddTransient<TextService>();
             
             services.AddTransient<ExternalTranslateService>();
-            
+            services.Configure<YandexTranslateOptions>(Configuration.GetSection("YandexTranslate"));
             services.AddTransient<TranslateService>();
 
         }

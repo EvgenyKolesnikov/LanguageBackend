@@ -183,7 +183,7 @@ public class MainViewModel : BaseViewModel
     private async void AddText()
     {
         await _methods.PostItemAsync(
-            _options.Host + "/api/Admin/Text",
+            "/api/Admin/Text",
             request: AddedText,
             collection: Texts,
             onError: async resp =>

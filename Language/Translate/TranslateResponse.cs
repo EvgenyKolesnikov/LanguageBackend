@@ -4,5 +4,5 @@ public class TranslateResponse
 {
     public string Text { get; set; }
     public string Alias { get; set; }
-    public string Translation { get; set; }
+    public string? Translation { get; set; }
 }
