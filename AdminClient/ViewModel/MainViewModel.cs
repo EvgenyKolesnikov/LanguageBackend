@@ -134,86 +134,121 @@ public class MainViewModel : BaseViewModel
         EditWordPropertyCommand = new TriggerCommand(EditWordProperty);
         AddWordPropertyCommand = new TriggerCommand(AddWordProperty);
     }
-
-
-
-
-    private async void Translate(object word)
-    {
-        var Datacontext = ((Button)word).DataContext;
-        if (Datacontext is BaseWordDto _baseWord)
-        {
-            var response = await _httpClient.PostAsync(_options.Host + $"/api/Admin/Word/Translate/{_baseWord.Id}",new StringContent(""));
-            if (response.IsSuccessStatusCode)
-            {
-                var responseObj = await ResponseHandler.DeserializeAsync<BaseWordDto>(response);
-                var objToEdit = BaseWords.FirstOrDefault(i => i.Id == responseObj.Id);
-            
-                if (objToEdit != null)
-                {
-                    int i = BaseWords.IndexOf(objToEdit);
-                    BaseWords[i] = responseObj;
-                }
-            }
-        }
-    }
-
+    
+    #region Create
     private async void AddWordProperty()
     {
         AddWordRequest.BaseWordId = CurrentBaseWord.Id;
         AddWordRequest.BaseWord = CurrentBaseWord.Word;
-        var response = await _httpClient.PostAsJsonAsync(_options.Host + "/api/Admin/WordProperty", AddWordRequest);
-        
-        if (response.IsSuccessStatusCode)
-        {
-            var responseObj = await ResponseHandler.DeserializeAsync<WordPropertiesDto>(response);
-            WordProperties.Add(responseObj);
-        }
-        else
-        {
-            MessageBox.Show(await response.Content.ReadAsStringAsync());
-        }
-        
-        RaisePropertyChanged(nameof(WordProperties));
+        await _methods.PostItemAsync(
+            "/api/Admin/WordProperty",
+            request: AddWordRequest,
+            collection: WordProperties,
+            onFinally: () => RaisePropertyChanged(nameof(WordProperties))
+        );
+    }
+    
+    
+    private async void AddBaseWord()
+    {
+        await _methods.PostItemAsync(
+            "/api/Admin/Dictionary",
+            request: AddWordRequest,
+            collection: BaseWords,
+            onFinally: () =>
+            {
+                AddWordRequest = new AddWordProperty();
+                RaisePropertyChanged(nameof(AddWordRequest));
+            },
+            onError: async resp =>
+            {
+                var err = await resp.Content.ReadAsStringAsync();
+                MessageBox.Show(err);
+            });
+    }
+    
+    private async void AddExtentedWord()
+    {
+        await _methods.PostItemAsync(
+            "/api/Admin/ExtentedWord",
+            request: AddExtentedWordRequest,
+            collection: ExtentedWords,
+            onFinally: () =>
+            {
+                AddExtentedWordRequest = new AddExtentedWord();
+                RaisePropertyChanged(nameof(AddExtentedWordRequest));
+            }
+        );
+    }
+    
+    private async void AddText()
+    {
+        await _methods.PostItemAsync(
+            _options.Host + "/api/Admin/Text",
+            request: AddedText,
+            collection: Texts,
+            onError: async resp =>
+            {
+                var err = await resp.Content.ReadAsStringAsync();
+                MessageBox.Show(err);
+            });
     }
 
+    #endregion
+
+    #region Read
     
-    
-    private async void WordPropertyForm(object word)
+    // Выделить слово
+    private async void SelectBaseWord(object word)
     {
         var Datacontext = ((Button)word).DataContext;
-        if(Datacontext is WordPropertiesDto _word) // rework
+        if (Datacontext is BaseWordDto _baseWord)
         {
-            EditPropertyWordRequest.BaseWordId = CurrentBaseWord.Id;
-            EditPropertyWordRequest.PropertyWordId = _word.Id;
-            EditPropertyWordRequest.Translation = _word.Translation;
-        }
+            var response = await _httpClient.GetAsync(_options.Host + $"/api/Admin/GetExtentedWord?baseWord={_baseWord.Word}");
+            var responseObj = await ResponseHandler.DeserializeAsync<ObservableCollection<GetExtentedWords>>(response);
+            CurrentBaseWord = _baseWord;
+            ExtentedWords.Clear();
+            WordProperties.Clear();
 
-       
-        var win = new EditWordProperty(this);
-        win.Show();  
-    }
-    
-    private async void EditWordProperty()
-    {
-        var response = await _httpClient.PutAsJsonAsync(_options.Host + $"/api/Admin/WordProperty/", EditPropertyWordRequest);
-        if (response.IsSuccessStatusCode)
-        {
-            var responseObj = await ResponseHandler.DeserializeAsync<WordPropertiesDto>(response);
-            
-            var objToEdit = WordProperties.FirstOrDefault(i => i.Id == responseObj.Id);
-            
-            if (objToEdit != null)
+            foreach (var extentedWord in responseObj)
             {
-                int i = WordProperties.IndexOf(objToEdit);
-                WordProperties[i] = responseObj;
+                ExtentedWords.Add(extentedWord);
             }
+
+            foreach (var property in CurrentBaseWord.Properties)
+            {
+                WordProperties.Add(property);
+            }
+            
+            RaisePropertyChanged(nameof(CurrentBaseWord));
+            AddExtentedWordRequest.BaseIdWord = _baseWord.Id;
         }
     }
     
-    
-    
-    // Получить все слова
+    // Получить слова по тексту
+    private async void GetWordByText(object text)
+    {
+        var Datacontext = ((Button)text).DataContext;
+        if (Datacontext is TextDto _text)
+        {
+            var response = await _httpClient.GetAsync(_options.Host + $"/api/Admin/Text/{_text.Id}");
+            var responseObj = await ResponseHandler.DeserializeAsync<GetWordsByTextResponse>(response);
+            BaseWords.Clear();
+
+            foreach (var word in responseObj.Words)
+            {
+                var baseWord = new BaseWordDto()
+                {
+                    Id = word.Id,
+                    Word = word.Word,
+                    Translation = word.Translation,
+                };
+                BaseWords.Add(baseWord);
+            }
+            CurrentText = _text;
+            RaisePropertyChanged(nameof(CurrentText));
+        }
+    }
     private async Task<ObservableCollection<BaseWordDto>> GetWords()
     {
         var response = await _httpClient.GetAsync(_options.Host + "/api/Admin/Dictionary");
@@ -221,7 +256,58 @@ public class MainViewModel : BaseViewModel
         
         return responseObj;
     }
+    
+    private async Task<ObservableCollection<TextDto>> GetTexts()
+    {
+        var response = await _httpClient.GetAsync(_options.Host + "/api/Admin/Text");
+        var responseObj = await ResponseHandler.DeserializeAsync<ObservableCollection<TextDto>>(response);
+        
+        return responseObj;
+    }
 
+    #endregion
+
+    #region Update
+    private async void EditWordProperty()
+    {
+        await _methods.UpdateAsync(
+            $"/api/Admin/WordProperty/",
+            request: EditPropertyWordRequest,
+            collection: WordProperties,
+            getId: x => x.Id);
+    }
+    private async void EditBaseWord()
+    {
+        await _methods.UpdateAsync(
+            $"/api/Admin/Dictionary/{EditBaseWordRequest.Id}",
+            request: EditBaseWordRequest,
+            collection: BaseWords,
+            getId: x => x.Id);
+    }
+    
+    // Редактировать расширенное слово
+    private async void EditExtentedWord()
+    {
+        await _methods.UpdateAsync(
+            $"/api/Admin/ExtentedWord/{EditExtentedWordRequest.Id}",
+            request: EditExtentedWordRequest,
+            collection: ExtentedWords,
+            getId: x => x.Id);
+    }
+    
+    private async void EditText()
+    {
+        await _methods.UpdateAsync(
+            $"/api/Admin/Text/{EditTextRequest.Id}",
+            request: EditTextRequest,
+            collection: Texts,
+            getId: x => x.Id);
+    }
+    
+
+    #endregion
+    
+    #region Delete
     
     // Удаляем слово либо из словаря, либо отвязываем его от текста
     private async void DeleteBaseWord(object word)
@@ -267,29 +353,29 @@ public class MainViewModel : BaseViewModel
                 CurrentBaseWord.Properties.Remove(item);
             });
     }
+
+    #endregion
     
-    
-    private async void AddBaseWord()
+    #region Forms
+
+    private async void WordPropertyForm(object word)
     {
-        var response = await _httpClient.PostAsJsonAsync(_options.Host + "/api/Admin/Dictionary", AddWordRequest);
+        var Datacontext = ((Button)word).DataContext;
+        if(Datacontext is WordPropertiesDto _word) // rework
+        {
+            EditPropertyWordRequest.BaseWordId = CurrentBaseWord.Id;
+            EditPropertyWordRequest.PropertyWordId = _word.Id;
+            EditPropertyWordRequest.Translation = _word.Translation;
+        }
         
-        if (response.IsSuccessStatusCode)
-        {
-            var responseObj = await ResponseHandler.DeserializeAsync<BaseWordDto>(response);
-            BaseWords.Add(responseObj);
-        }
-        else
-        {
-            MessageBox.Show(await response.Content.ReadAsStringAsync());
-        }
-        AddWordRequest = new AddWordProperty();
-        RaisePropertyChanged(nameof(AddWordRequest));
+        var win = new EditWordProperty(this);
+        win.Show();  
     }
     
     private async void EditBaseWordForm(object word)
     {
         var Datacontext = ((Button)word).DataContext;
-        if(Datacontext is BaseWord _word) // rework
+        if(Datacontext is BaseWordDto _word) // rework
         {
             EditBaseWordRequest.Id = _word.Id;
             EditBaseWordRequest.Word = _word.Word;
@@ -299,71 +385,6 @@ public class MainViewModel : BaseViewModel
        
         var win = new EditBaseWord(this);
         win.Show();  
-    }
-
-    private async void EditBaseWord()
-    {
-        var response = await _httpClient.PutAsJsonAsync(_options.Host + $"/api/Admin/Dictionary/{EditBaseWordRequest.Id}", EditBaseWordRequest);
-        if (response.IsSuccessStatusCode)
-        {
-            var responseObj = await ResponseHandler.DeserializeAsync<BaseWordDto>(response);
-            
-            var objToEdit = BaseWords.FirstOrDefault(i => i.Id == responseObj.Id);
-            
-            if (objToEdit != null)
-            {
-                int i = BaseWords.IndexOf(objToEdit);
-                BaseWords[i] = responseObj;
-            }
-        }
-    }
-    
-
-    
-    
-    // Выделить слово
-    private async void SelectBaseWord(object word)
-    {
-        var Datacontext = ((Button)word).DataContext;
-        if (Datacontext is BaseWordDto _baseWord)
-        {
-            var response = await _httpClient.GetAsync(_options.Host + $"/api/Admin/GetExtentedWord?baseWord={_baseWord.Word}");
-            var responseObj = await ResponseHandler.DeserializeAsync<ObservableCollection<GetExtentedWords>>(response);
-            CurrentBaseWord = _baseWord;
-            ExtentedWords.Clear();
-            WordProperties.Clear();
-
-            foreach (var extentedWord in responseObj)
-            {
-                ExtentedWords.Add(extentedWord);
-            }
-
-            foreach (var property in CurrentBaseWord.Properties)
-            {
-                WordProperties.Add(property);
-            }
-            
-            RaisePropertyChanged(nameof(CurrentBaseWord));
-            AddExtentedWordRequest.BaseIdWord = _baseWord.Id;
-        }
-    }
-
-    // добавить расширенное слово
-    private async void AddExtentedWord()
-    {
-        var response = await _httpClient.PostAsJsonAsync(_options.Host + "/api/Admin/ExtentedWord", AddExtentedWordRequest);
-        
-        if (response.IsSuccessStatusCode)
-        {
-            var responseObj = await ResponseHandler.DeserializeAsync<GetExtentedWords>(response);
-            ExtentedWords.Add(responseObj);
-        }
-        else
-        {
-            MessageBox.Show(await response.Content.ReadAsStringAsync());
-        }
-        AddExtentedWordRequest = new AddExtentedWord();
-        RaisePropertyChanged(nameof(AddExtentedWordRequest));
     }
 
     private async void EditExtentedWordForm(object word)
@@ -380,76 +401,7 @@ public class MainViewModel : BaseViewModel
         var win = new EditExtentedWord(this);
         win.Show();  
     }
-
-    // Редактировать расширенное слово
-    private async void EditExtentedWord()
-    {
-        var response = await _httpClient.PutAsJsonAsync(_options.Host + $"/api/Admin/ExtentedWord/{EditExtentedWordRequest.Id}", EditExtentedWordRequest);
-        if (response.IsSuccessStatusCode)
-        {
-            var responseObj = await ResponseHandler.DeserializeAsync<GetExtentedWords>(response);
-            
-            var objToEdit = ExtentedWords.FirstOrDefault(i => i.Id == responseObj.Id);
-            
-            if (objToEdit != null)
-            {
-                int i = ExtentedWords.IndexOf(objToEdit);
-                ExtentedWords[i] = responseObj;
-            }
-        }
-    }
     
-    // Получить все слова
-    private async Task<ObservableCollection<TextDto>> GetTexts()
-    {
-        var response = await _httpClient.GetAsync(_options.Host + "/api/Admin/Text");
-        var responseObj = await ResponseHandler.DeserializeAsync<ObservableCollection<TextDto>>(response);
-        
-        return responseObj;
-    }
-
-    // Получить слова по тексту
-    private async void GetWordByText(object text)
-    {
-        var Datacontext = ((Button)text).DataContext;
-        if (Datacontext is TextDto _text)
-        {
-            var response = await _httpClient.GetAsync(_options.Host + $"/api/Admin/Text/{_text.Id}");
-            var responseObj = await ResponseHandler.DeserializeAsync<GetWordsByTextResponse>(response);
-            BaseWords.Clear();
-
-            foreach (var word in responseObj.Words)
-            {
-                var baseWord = new BaseWordDto()
-                {
-                    Id = word.Id,
-                    Word = word.Word,
-                    Translation = word.Translation,
-                };
-                BaseWords.Add(baseWord);
-            }
-            CurrentText = _text;
-            RaisePropertyChanged(nameof(CurrentText));
-        }
-    }
-
-   
-    
-    
-    
-    
-    
-    
-    
-    private async void AddText()
-    {
-        var response = await _httpClient.PostAsJsonAsync(_options.Host + "/api/Admin/Text", AddedText);
-        if (response.IsSuccessStatusCode)
-        {
-            var responseObj = await ResponseHandler.DeserializeAsync<TextDto>(response);
-            Texts.Add(responseObj);
-        }
-    }
     private async void EditTextForm(object text)
     {
         var Datacontext = ((Button)text).DataContext;
@@ -458,24 +410,30 @@ public class MainViewModel : BaseViewModel
             EditTextRequest.Id = _text.Id;
             EditTextRequest.Content = _text.Content;
         }
-
        
         var win = new EditText(this);
         win.Show();  
     }
-    private async void EditText()
+
+    #endregion
+    
+    
+    private async void Translate(object word)
     {
-        var response = await _httpClient.PutAsJsonAsync(_options.Host + $"/api/Admin/Text/{EditTextRequest.Id}", EditTextRequest);
-        if (response.IsSuccessStatusCode)
+        var Datacontext = ((Button)word).DataContext;
+        if (Datacontext is BaseWordDto _baseWord)
         {
-            var responseObj = await ResponseHandler.DeserializeAsync<TextDto>(response);
-            
-            var objToEdit = Texts.FirstOrDefault(i => i.Id == responseObj.Id);
-            
-            if (objToEdit != null)
+            var response = await _httpClient.PostAsync(_options.Host + $"/api/Admin/Word/Translate/{_baseWord.Id}",new StringContent(""));
+            if (response.IsSuccessStatusCode)
             {
-                int i = Texts.IndexOf(objToEdit);
-                Texts[i] = responseObj;
+                var responseObj = await ResponseHandler.DeserializeAsync<BaseWordDto>(response);
+                var objToEdit = BaseWords.FirstOrDefault(i => i.Id == responseObj.Id);
+            
+                if (objToEdit != null)
+                {
+                    int i = BaseWords.IndexOf(objToEdit);
+                    BaseWords[i] = responseObj;
+                }
             }
         }
     }

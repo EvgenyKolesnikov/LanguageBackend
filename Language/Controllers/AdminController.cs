@@ -44,7 +44,7 @@ public class AdminController : ControllerBase
         try
         {
             var response = await _dictionaryService.AddWordInBaseDictionary(request.BaseWord, request.Translation);
-            return Ok(response);
+            return Ok(new BaseWordDto(response));
         }
         catch (Exception e)
         {
@@ -96,7 +96,6 @@ public class AdminController : ControllerBase
         {
             return NotFound();
         }
-        
         
         _dbContext.BaseWords.Remove(baseWord);
         await _dbContext.SaveChangesAsync();

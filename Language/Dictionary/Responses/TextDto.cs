@@ -7,7 +7,7 @@ public class TextDto
     public int Id { get; set; }
     public string Content { get; set; }
     public int WordsCount { get; set; }
-    public int WordsProcessed => Dictionary.Count();
+    public int WordsProcessed => Dictionary != null ? Dictionary.Count() : 0;
     public IEnumerable<BaseWordDto> Dictionary { get; set; }
 
     public TextDto (){}
