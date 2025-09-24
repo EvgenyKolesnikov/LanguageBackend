@@ -61,7 +61,6 @@ public class MainViewModel : BaseViewModel
     public TriggerCommand<object> TranslateWordCommand { get; set; }
     
     // Word Property
-    public AddWordProperty AddWordPropertyRequest { get; set; } = new();
     public TriggerCommand AddWordPropertyCommand { get; set; }
     public TriggerCommand<object> DeleteWordPropertyCommand { get; set; }
     public TriggerCommand<object> OpenWordPropertyForm { get; set; }

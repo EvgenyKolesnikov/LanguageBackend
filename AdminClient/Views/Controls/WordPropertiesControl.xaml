@@ -16,7 +16,7 @@
         <ListView ItemsSource="{Binding WordProperties}" Width="480"  Margin="0 5" HorizontalAlignment="Left">
             <ListView.View>
                 <GridView>
-                    <GridViewColumn Header="Перевод" Width="140" DisplayMemberBinding="{Binding Translation }" />
+                    <GridViewColumn Header="Перевод" Width="140" DisplayMemberBinding="{Binding Translation}" />
                     <GridViewColumn Header="Часть речи" Width="140" DisplayMemberBinding="{Binding PartOfSpeech }" />
                     
                     <GridViewColumn >
