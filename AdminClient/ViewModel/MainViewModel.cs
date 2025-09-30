@@ -23,29 +23,25 @@ public class MainViewModel : BaseViewModel
     private readonly HttpClient _httpClient;
     private readonly Methods _methods;
 
-    public ObservableCollection<BaseWordDto> BaseWords { get; set; } = new ();
+    public ObservableCollection<WordDto> BaseWords { get; set; } = new ();
+    public ObservableCollection<WordDto> ExtentedWords { get; set; } = new();
     public ObservableCollection<WordPropertiesDto> WordProperties { get; set; } = new();
-    public ObservableCollection<GetExtentedWords> ExtentedWords { get; set; } = new ();
-    
     public ObservableCollection<TextDto> Texts { get; set; } = new ();
     
+    
+    
     // Base Word
-    public BaseWordDto CurrentBaseWord { get; set; } = new BaseWordDto();
-    public TriggerCommand AddBaseWordCommand { get; set; }
-    public TriggerCommand<object> OpenEditBaseWordForm { get; set; }
-    public TriggerCommand EditBaseWordCommand { get; set; }
-    public TriggerCommand<object> DeleteBaseWordCommand { get; set; }
-    public EditBaseWordRequest EditBaseWordRequest { get; set; } = new();
+    public WordDto CurrentWord { get; set; } = new WordDto();
+    public TriggerCommand AddWordCommand { get; set; }
+    public TriggerCommand<object> OpenEditWordForm { get; set; }
+    public TriggerCommand EditWordCommand { get; set; }
+    public TriggerCommand<object> DeleteWordCommand { get; set; }
+    public EditWordRequest EditWordRequest { get; set; } = new();
     public AddWordProperty AddWordRequest { get; set; } = new();
     
     // Extented Words
     public TriggerCommand<object> SelectWordCommand { get; set; }
-    public TriggerCommand AddExtentedWordCommand { get; set; }
-    public TriggerCommand<object> OpenEditExtentedWordForm { get; set; }
-    public TriggerCommand EditExtentedWordCommand { get; set; }
-    public TriggerCommand<object> DeleteExtentedWordCommand { get; set; }
     public AddExtentedWord AddExtentedWordRequest { get; set; } = new();
-    public EditExtentedWordRequest EditExtentedWordRequest { get; set; } = new();
     
     // Texts
     
@@ -88,13 +84,13 @@ public class MainViewModel : BaseViewModel
     {
         try
         {
-            BaseWords = await GetWords();
+            BaseWords =  await GetWords();
             Texts = await GetTexts();
             CurrentText = null;
-            CurrentBaseWord = null;
+            CurrentWord = null;
             HealthCheck = true;
-            ExtentedWords.Clear();
-            RaisePropertyChanged(nameof(CurrentBaseWord));
+    
+            RaisePropertyChanged(nameof(CurrentWord));
             RaisePropertyChanged(nameof(CurrentText));
             RaisePropertyChanged(nameof(BaseWords));
             RaisePropertyChanged(nameof(Texts));
@@ -109,16 +105,12 @@ public class MainViewModel : BaseViewModel
 
     private void InitializeCommands()
     {
-        DeleteBaseWordCommand = new TriggerCommand<object>(DeleteBaseWord);
-        OpenEditBaseWordForm = new TriggerCommand<object>(EditBaseWordForm);
-        EditBaseWordCommand = new TriggerCommand(EditBaseWord);
-        AddBaseWordCommand = new TriggerCommand(AddBaseWord);
+        DeleteWordCommand = new TriggerCommand<object>(DeleteWord);
+        OpenEditWordForm = new TriggerCommand<object>(EditBaseWordForm);
+        EditWordCommand = new TriggerCommand(EditBaseWord);
+        AddWordCommand = new TriggerCommand(AddBaseWord);
         
-        SelectWordCommand = new TriggerCommand<object>(SelectBaseWord);
-        AddExtentedWordCommand =  new TriggerCommand(AddExtentedWord);
-        OpenEditExtentedWordForm = new TriggerCommand<object>(EditExtentedWordForm);
-        EditExtentedWordCommand = new TriggerCommand(EditExtentedWord);
-        DeleteExtentedWordCommand =  new TriggerCommand<object>(DeleteExtentedWord);
+        SelectWordCommand = new TriggerCommand<object>(SelectWord);
         
         GetWordByTextCommand = new TriggerCommand<object>(GetWordByText);
         AddTextCommand = new TriggerCommand(AddText);
@@ -137,8 +129,8 @@ public class MainViewModel : BaseViewModel
     #region Create
     private async void AddWordProperty()
     {
-        AddWordRequest.BaseWordId = CurrentBaseWord.Id;
-        AddWordRequest.BaseWord = CurrentBaseWord.Word;
+        AddWordRequest.WordId = CurrentWord.Id;
+        AddWordRequest.WordText = CurrentWord.WordText;
         await _methods.PostItemAsync(
             "/api/Admin/WordProperty",
             request: AddWordRequest,
@@ -166,19 +158,6 @@ public class MainViewModel : BaseViewModel
             });
     }
     
-    private async void AddExtentedWord()
-    {
-        await _methods.PostItemAsync(
-            "/api/Admin/ExtentedWord",
-            request: AddExtentedWordRequest,
-            collection: ExtentedWords,
-            onFinally: () =>
-            {
-                AddExtentedWordRequest = new AddExtentedWord();
-                RaisePropertyChanged(nameof(AddExtentedWordRequest));
-            }
-        );
-    }
     
     private async void AddText()
     {
@@ -198,29 +177,30 @@ public class MainViewModel : BaseViewModel
     #region Read
     
     // Выделить слово
-    private async void SelectBaseWord(object word)
+    private async void SelectWord(object word)
     {
         var Datacontext = ((Button)word).DataContext;
-        if (Datacontext is BaseWordDto _baseWord)
+        if (Datacontext is WordDto _word)
         {
-            var response = await _httpClient.GetAsync(_options.Host + $"/api/Admin/GetExtentedWord?baseWord={_baseWord.Word}");
-            var responseObj = await ResponseHandler.DeserializeAsync<ObservableCollection<GetExtentedWords>>(response);
-            CurrentBaseWord = _baseWord;
-            ExtentedWords.Clear();
+            var response = await _httpClient.GetAsync(_options.Host + $"/api/Admin/Dictionary/{_word.Id}");
+            var currentWord = await ResponseHandler.DeserializeAsync<WordDto>(response);
+            CurrentWord = currentWord;
+  
             WordProperties.Clear();
 
-            foreach (var extentedWord in responseObj)
+            ExtentedWords.Clear();
+            foreach (var item in currentWord.ChildrenWords)
             {
-                ExtentedWords.Add(extentedWord);
+                ExtentedWords.Add(item);
             }
 
-            foreach (var property in CurrentBaseWord.Properties)
+            foreach (var property in CurrentWord.Properties)
             {
                 WordProperties.Add(property);
             }
             
-            RaisePropertyChanged(nameof(CurrentBaseWord));
-            AddExtentedWordRequest.BaseIdWord = _baseWord.Id;
+            RaisePropertyChanged(nameof(CurrentWord));
+            AddExtentedWordRequest.BaseIdWord = currentWord.Id;
         }
     }
     
@@ -236,10 +216,10 @@ public class MainViewModel : BaseViewModel
 
             foreach (var word in responseObj.Words)
             {
-                var baseWord = new BaseWordDto()
+                var baseWord = new WordDto()
                 {
                     Id = word.Id,
-                    Word = word.Word,
+                    WordText = word.WordText,
                     Translation = word.Translation,
                 };
                 BaseWords.Add(baseWord);
@@ -248,10 +228,10 @@ public class MainViewModel : BaseViewModel
             RaisePropertyChanged(nameof(CurrentText));
         }
     }
-    private async Task<ObservableCollection<BaseWordDto>> GetWords()
+    private async Task<ObservableCollection<WordDto>> GetWords()
     {
         var response = await _httpClient.GetAsync(_options.Host + "/api/Admin/Dictionary");
-        var responseObj = await ResponseHandler.DeserializeAsync<ObservableCollection<BaseWordDto>>(response);
+        var responseObj = await ResponseHandler.DeserializeAsync<ObservableCollection<WordDto>>(response);
         
         return responseObj;
     }
@@ -277,22 +257,55 @@ public class MainViewModel : BaseViewModel
     }
     private async void EditBaseWord()
     {
+        WordDto word = new WordDto();
+        if (!string.IsNullOrEmpty(EditWordRequest.ParentWord))
+        {
+            word = BaseWords.FirstOrDefault(x => x.WordText == EditWordRequest.ParentWord);
+            if (word == null)
+            {
+                MessageBox.Show("Parent Word not found");
+                return;
+            }
+        }
+        
+        EditWordRequest.ParentWordId = word.Id;
+
         await _methods.UpdateAsync(
-            $"/api/Admin/Dictionary/{EditBaseWordRequest.Id}",
-            request: EditBaseWordRequest,
+            $"/api/Admin/Dictionary/{EditWordRequest.Id}",
+            request: EditWordRequest,
             collection: BaseWords,
-            getId: x => x.Id);
+            getId: x => x.Id,
+            onError: async resp=>
+            {
+                var err = await resp.Content.ReadAsStringAsync();
+                MessageBox.Show(err);
+            },
+            onSuccess:  item =>
+            {
+                if (string.IsNullOrEmpty(EditWordRequest.ParentWord)) // Base -> Base
+                {
+                    if (BaseWords.FirstOrDefault(i => i.Id == item.Id) == null) // Extend -> Base
+                    {
+                        ExtentedWords.Remove(ExtentedWords.FirstOrDefault(i => i.Id == item.Id)!);
+                        BaseWords.Add(item);
+                    }
+                }
+                else 
+                {
+                    if (ExtentedWords.FirstOrDefault(i => i.Id == item.Id) == null) // Base -> Extend
+                    {
+                        ExtentedWords.Add(item);
+                        BaseWords.Remove(item);
+                    }
+                    else // Extend -> Extend
+                    {
+                        ExtentedWords.Remove(ExtentedWords.FirstOrDefault(i => i.Id == item.Id)!);
+                    }
+                }
+            });
     }
     
-    // Редактировать расширенное слово
-    private async void EditExtentedWord()
-    {
-        await _methods.UpdateAsync(
-            $"/api/Admin/ExtentedWord/{EditExtentedWordRequest.Id}",
-            request: EditExtentedWordRequest,
-            collection: ExtentedWords,
-            getId: x => x.Id);
-    }
+   
     
     private async void EditText()
     {
@@ -309,28 +322,38 @@ public class MainViewModel : BaseViewModel
     #region Delete
     
     // Удаляем слово либо из словаря, либо отвязываем его от текста
-    private async void DeleteBaseWord(object word)
+    private async void DeleteWord(object word)
     {
-        await _methods.DeleteItemAsync<BaseWordDto>(
-            word,
-            item => CurrentText == null
-                ? $"/api/Admin/Dictionary/{item.Id}"
-                : $"/api/Admin/Text/{CurrentText.Id}/Word/{item.Id}",
-            item =>
-            {
-                BaseWords.Remove(item);
-                if (CurrentText != null)
-                    RaisePropertyChanged(nameof(Texts));
-            });
+        if (((Button)word).DataContext is WordDto _word)
+        {
+            await _methods.DeleteItemAsync<WordDto>(
+                word,
+                item => CurrentText == null
+                    ? $"/api/Admin/Dictionary/{item.Id}"
+                    : $"/api/Admin/Text/{CurrentText.Id}/Word/{item.Id}",
+                item =>
+                {
+                    if (_word.ParentWordId == null)
+                    {
+                        BaseWords.Remove(item);
+                        ExtentedWords.Clear(); 
+                    }
+                    else
+                    {
+                        var baseWordId = ExtentedWords?.FirstOrDefault(i => i.Id == item.Id)?.ParentWordId;
+                        var baseWord = BaseWords.FirstOrDefault(i => i.Id == baseWordId);
+                        baseWord?.ChildrenWords.Remove(item);                      
+                        
+                        ExtentedWords?.Remove(item);
+                    }
+                    
+                    if (CurrentText != null)
+                        RaisePropertyChanged(nameof(Texts));
+                });
+        }
     }
     
-    // удалить расширенное слово
-    private async void DeleteExtentedWord(object word)
-    {
-        await _methods.DeleteItemAsync<GetExtentedWords>(word,
-            item => $"/api/Admin/ExtentedWord/{item.Id}",
-            item => ExtentedWords.Remove(item));
-    }
+   
     
     // Удалить текст
     private async void DeleteText(object text)
@@ -349,7 +372,7 @@ public class MainViewModel : BaseViewModel
             item =>
             {
                 WordProperties.Remove(item);
-                CurrentBaseWord.Properties.Remove(item);
+                CurrentWord.Properties.Remove(item);
             });
     }
 
@@ -362,7 +385,7 @@ public class MainViewModel : BaseViewModel
         var Datacontext = ((Button)word).DataContext;
         if(Datacontext is WordPropertiesDto _word) // rework
         {
-            EditPropertyWordRequest.BaseWordId = CurrentBaseWord.Id;
+            EditPropertyWordRequest.BaseWordId = CurrentWord.Id;
             EditPropertyWordRequest.PropertyWordId = _word.Id;
             EditPropertyWordRequest.Translation = _word.Translation;
         }
@@ -374,32 +397,19 @@ public class MainViewModel : BaseViewModel
     private async void EditBaseWordForm(object word)
     {
         var Datacontext = ((Button)word).DataContext;
-        if(Datacontext is BaseWordDto _word) // rework
+        if(Datacontext is WordDto _word) // rework
         {
-            EditBaseWordRequest.Id = _word.Id;
-            EditBaseWordRequest.Word = _word.Word;
-            EditBaseWordRequest.Translation = _word.Translation;
+            EditWordRequest.Id = _word.Id;
+            EditWordRequest.WordText = _word.WordText;
+            EditWordRequest.Translation = _word.Translation;
+            EditWordRequest.ParentWord = BaseWords.FirstOrDefault(i => i.Id == _word.ParentWordId)?.WordText!;
         }
 
        
-        var win = new EditBaseWord(this);
+        var win = new EditWord(this);
         win.Show();  
     }
-
-    private async void EditExtentedWordForm(object word)
-    {
-        var Datacontext = ((Button)word).DataContext;
-        if(Datacontext is GetExtentedWords _word) // rework
-        {
-            EditExtentedWordRequest.Id = _word.Id;
-            EditExtentedWordRequest.BaseWordId = _word.BaseWordId;
-            EditExtentedWordRequest.Word = _word.Word;
-        }
-
-       
-        var win = new EditExtentedWord(this);
-        win.Show();  
-    }
+    
     
     private async void EditTextForm(object text)
     {
@@ -420,12 +430,12 @@ public class MainViewModel : BaseViewModel
     private async void Translate(object word)
     {
         var Datacontext = ((Button)word).DataContext;
-        if (Datacontext is BaseWordDto _baseWord)
+        if (Datacontext is WordDto _baseWord)
         {
             var response = await _httpClient.PostAsync(_options.Host + $"/api/Admin/Word/Translate/{_baseWord.Id}",new StringContent(""));
             if (response.IsSuccessStatusCode)
             {
-                var responseObj = await ResponseHandler.DeserializeAsync<BaseWordDto>(response);
+                var responseObj = await ResponseHandler.DeserializeAsync<WordDto>(response);
                 var objToEdit = BaseWords.FirstOrDefault(i => i.Id == responseObj.Id);
             
                 if (objToEdit != null)

@@ -15,22 +15,22 @@ public class DictionaryService
     }
 
 
-    public async Task<BaseWord?> AddWordToUser(string word, User user)
+    public async Task<Word?> AddWordToUser(string word, User user)
     {
-        BaseWord? response = null;
-        var extentedWord = await _dbContext.ExtentedWords
-            .Include(i => i.BaseWord)
+        Word? response = null;
+        var extentedWord = await _dbContext.Words
+            .Include(i => i)
             .ThenInclude(i => i.Users)
-            .FirstOrDefaultAsync(i => i.Word == word.ToLower());
+            .FirstOrDefaultAsync(i => i.WordText == word.ToLower());
+        
         if (extentedWord != null)
         {
-            extentedWord.BaseWord.Users.Add(user);
-            response = extentedWord.BaseWord;
+            response = extentedWord;
         }
         else
         {
-            var wordDb = await _dbContext.BaseWords.Include(i => i.Users)
-                .FirstOrDefaultAsync(i => i.Word == word.ToLower());
+            var wordDb = await _dbContext.Words.Include(i => i.Users)
+                .FirstOrDefaultAsync(i => i.WordText == word.ToLower());
 
             if (wordDb != null)
             {
@@ -44,20 +44,21 @@ public class DictionaryService
         return response;
     }
 
-    public async Task<BaseWord> AddWordInBaseDictionary(string word, string translation, string? partOfSpeech = null)
+    public async Task<Word> AddWordInBaseDictionary(string word, string translation, string? partOfSpeech = null, int? parentWordId = null)
     {
-        var entity = new BaseWord()
+        var entity = new Word()
         {
-            Word = word.ToLower(),
+            WordText = word.ToLower(),
             Translation = translation,
+            ParentWordId = parentWordId,
             Properties = new List<WordProperties>()
             {
-              new () {Translation = translation.ToLower(), PartOfSpeech = partOfSpeech}  
+              new () { Translation = translation.ToLower(), PartOfSpeech = partOfSpeech }  
             }
         };
 
         
-        var wordDb = await _dbContext.BaseWords.Include(baseWord => baseWord.Properties).FirstOrDefaultAsync(i => i.Word == word.ToLower());
+        var wordDb = await _dbContext.Words.Include(baseWord => baseWord.Properties).FirstOrDefaultAsync(i => i.WordText == word.ToLower());
 
         if (wordDb != null)
         {
@@ -76,31 +77,11 @@ public class DictionaryService
         }
         
 
-        var response = await _dbContext.BaseWords.AddAsync(entity);
+        var response = await _dbContext.Words.AddAsync(entity);
         await _dbContext.SaveChangesAsync();
         return response.Entity;
     }
-
-    public async Task AddWordInExtentedDictionary(string word, string baseWord, string translation)
-    {
-        var baseWordDb = await _dbContext.BaseWords.FirstOrDefaultAsync(i => i.Word == baseWord.ToLower());
-        if (baseWordDb == null) return;
-        
-        var entity = new ExtentedWord()
-        {
-            Word = word.ToLower(),
-            BaseWord = baseWordDb,
-            Translation = translation
-        };
-
-        if (await _dbContext.ExtentedWords.AnyAsync(i => i.Word == word.ToLower()))
-        {
-            throw new Exception("Word already exists");
-        }
-
-        await _dbContext.ExtentedWords.AddAsync(entity);
-        await _dbContext.SaveChangesAsync();
-    }
+    
 
     public async Task<List<GetWordsByUserResponse>> GetWordsByUser(Guid userId)
     {
@@ -113,7 +94,7 @@ public class DictionaryService
     public async Task DeleteWordByUser(Guid userId, int wordId)
     {
         // Используем FindAsync для поиска по первичному ключу (более эффективно)
-        var word = await _dbContext.BaseWords.FindAsync(wordId);
+        var word = await _dbContext.Words.FindAsync(wordId);
         if (word == null)
         {
             throw new KeyNotFoundException($"Word with id {wordId} not found");

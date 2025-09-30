@@ -50,23 +50,18 @@ public class PostgreFixture : IAsyncLifetime
     public async Task SeedTestData()
     {
         // Добавляем тестовые данные
-        if (!await _context.BaseWords.AnyAsync())
+        if (!await _context.Words.AnyAsync())
         {
-            var testWords = new List<BaseWord>
+            var testWords = new List<Word>
             {
-                new BaseWord { Id = 1, Word = "take", Translation = "взять" },
-                new BaseWord { Id = 2, Word = "take off", Translation = "снять" },
-                new BaseWord { Id = 3, Word = "run", Translation = "бежать" },
-                new BaseWord { Id = 4, Word = "swim", Translation = "плавать" },
-                new BaseWord { Id = 5, Word = "fly", Translation = "летать" }
+                new Word { Id = 1, WordText = "take", Translation = "взять" },
+                new Word { Id = 2, WordText = "take off", Translation = "снять" },
+                new Word { Id = 3, WordText = "run", Translation = "бежать" },
+                new Word { Id = 4, WordText = "swim", Translation = "плавать" },
+                new Word { Id = 5, WordText = "fly", Translation = "летать" }
             };
-            _context.BaseWords.AddRange(testWords);
+            _context.Words.AddRange(testWords);
             
-            var formWords = new List<ExtentedWord>()
-            {
-                new() { Word = "took", Translation = "взял" ,BaseWordId = 1 }
-            };
-            _context.ExtentedWords.AddRange(formWords);
             
             await _context.SaveChangesAsync();
             

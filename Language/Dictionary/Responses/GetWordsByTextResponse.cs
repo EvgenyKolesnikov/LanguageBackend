@@ -9,7 +9,7 @@ public class GetWordsByTextResponse
     
     public int WordsCount { get; set; }
     public int WordsProcessed { get; set; }
-    public List<BaseWordDto> Words { get; set; } = new();
+    public List<WordDto> Words { get; set; } = new();
     
     public GetWordsByTextResponse(){}
 
@@ -17,7 +17,7 @@ public class GetWordsByTextResponse
     {
         Id = text.Id;
         Content = text.Content;
-        Words = text.Dictionary.Select(i => new BaseWordDto(i)).ToList();
+        Words = text.Dictionary.Select(i => new WordDto(i)).ToList();
     }
    
 }

@@ -71,6 +71,7 @@ public class Methods
         ObservableCollection<TResponse> collection,
         Func<TResponse, TId> getId,
         Func<TRequest, TId>? getRequestId = null,
+        Action<TResponse>? onSuccess = null,
         Func<HttpResponseMessage, Task>? onError = null)
     {
         var response = await _httpClient.PutAsJsonAsync(_options.Host + url, request);
@@ -86,6 +87,7 @@ public class Methods
                 int index = collection.IndexOf(objToEdit);
                 collection[index] = responseObj;
             }
+            onSuccess?.Invoke(responseObj);
         }
         else
         {

@@ -3,11 +3,11 @@ using AdminClient.ViewModel;
 
 namespace AdminClient.Views.Windows;
 
-public partial class EditBaseWord : Window
+public partial class EditWord : Window
 {
     private MainViewModel _viewModel;
     
-    public EditBaseWord(MainViewModel viewModel)
+    public EditWord(MainViewModel viewModel)
     {
         _viewModel = viewModel;
         InitializeComponent();

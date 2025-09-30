@@ -81,13 +81,13 @@
         <StackPanel Grid.Column="1" Grid.Row="1">
             <ContentControl Name="MainContentController" Margin="5" MaxWidth="550" MaxHeight="{Binding ElementName=currentWindow - 200}"/>
             <ContentControl Name="WordPropertiesController" Margin="5" MaxWidth="550" MaxHeight="{Binding ElementName=currentWindow - 200}"
-                            IsEnabled="{Binding CurrentBaseWord, Converter={StaticResource NullToBoolConverter}}"/>
+                            IsEnabled="{Binding CurrentWord, Converter={StaticResource NullToBoolConverter}}"/>
         </StackPanel>
         
         
         <StackPanel Grid.Column="2" Grid.Row="1">
             <ContentControl Name="ExtentedWordsController" Margin="5" MaxWidth="450" MaxHeight="{Binding ElementName=currentWindow }"
-                            IsEnabled="{Binding CurrentBaseWord, Converter={StaticResource NullToBoolConverter}}"/>
+                            IsEnabled="{Binding CurrentWord, Converter={StaticResource NullToBoolConverter}}"/>
         </StackPanel>
         
         <StackPanel Grid.Column="3" Grid.Row="1">

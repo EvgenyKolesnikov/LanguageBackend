@@ -7,7 +7,7 @@ namespace Language.Model;
 public class WordProperties
 {
     public int Id { get; set; }
-    public BaseWord Word { get; set; }
+    public Word Word { get; set; }
     public string? Translation { get; set;}
     public string? PartOfSpeech { get; set;}
 }

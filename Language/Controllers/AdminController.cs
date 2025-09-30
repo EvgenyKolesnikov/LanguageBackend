@@ -43,8 +43,8 @@ public class AdminController : ControllerBase
     {
         try
         {
-            var response = await _dictionaryService.AddWordInBaseDictionary(request.BaseWord, request.Translation);
-            return Ok(new BaseWordDto(response));
+            var response = await _dictionaryService.AddWordInBaseDictionary(request.WordText, request.Translation);
+            return Ok(new WordDto(response));
         }
         catch (Exception e)
         {
@@ -58,13 +58,21 @@ public class AdminController : ControllerBase
     /// <param name="request"></param>
     /// <returns></returns>
     [HttpPut("Dictionary/{id}")]
-    public async Task<IActionResult> EditDictionary(int id, EditBaseWordRequest request)
+    public async Task<IActionResult> EditDictionary(int id, EditWordRequest request)
     {
-        var wordToUpdate = await _dbContext.BaseWords.FindAsync(id);
+        var wordToUpdate = await _dbContext.Words.Include(i => i.ChildrenWords).FirstOrDefaultAsync(i => i.Id == id);
         if (wordToUpdate == null) return NotFound();
         
-        wordToUpdate.Word = request.Word;
+        wordToUpdate.WordText = request.WordText;
         wordToUpdate.Translation = request.Translation;
+
+        if (wordToUpdate.Id != wordToUpdate.ParentWordId)
+        {
+            if (wordToUpdate!.ChildrenWords.Any())
+                return BadRequest("ParentWord не может содержать другой ParentWord");
+            wordToUpdate.ParentWordId  = request.ParentWordId == 0 ? null : request.ParentWordId;
+        }
+        
         
         await _dbContext.SaveChangesAsync();
         return Ok(wordToUpdate);
@@ -75,11 +83,38 @@ public class AdminController : ControllerBase
     /// </summary>
     /// <returns></returns>
     [HttpGet("Dictionary")]
-    public async Task<IActionResult> GetDictionary()
+    public async Task<IActionResult> GetDictionary(bool includeChildren = false)
     {
-        var baseWords = await _dbContext.BaseWords.Include(i => i.Properties).ToListAsync();
+        List<Word> baseWords = new List<Word>();
+        if (includeChildren)
+        { 
+            baseWords = await _dbContext.Words.Include(i => i.Properties).ToListAsync();
+        }
+        else
+        { 
+            baseWords = await _dbContext.Words.Include(i => i.Properties)
+                .Include(i => i.ChildrenWords)
+                .Where(i => i.ParentWordId == null).ToListAsync();
+        }
+        
 
-        var response = baseWords.Select(i => new BaseWordDto(i));
+        var response = baseWords.Select(i => new WordDto(i));
+        return Ok(response);
+    }
+
+    
+    /// <summary>
+    /// Получить слово
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    [HttpGet("Dictionary/{id}")]
+    public async Task<IActionResult> GetWord(int id)
+    {
+        var word = await _dbContext.Words
+            .Include(i => i.ChildrenWords)
+            .Include(i => i.Properties).FirstOrDefaultAsync(i => i.Id == id);
+        var response = new WordDto(word);
         return Ok(response);
     }
 
@@ -91,106 +126,19 @@ public class AdminController : ControllerBase
     [HttpDelete("Dictionary/{id}")]
     public async Task<IActionResult> DeleteBaseWord(int id)
     {
-        var baseWord = await _dbContext.BaseWords.FirstOrDefaultAsync(i => i.Id == id);
+        var baseWord = await _dbContext.Words.Include(i => i.ChildrenWords).FirstOrDefaultAsync(i => i.Id == id);
         if (baseWord == null)
         {
             return NotFound();
         }
         
-        _dbContext.BaseWords.Remove(baseWord);
+        _dbContext.Words.Remove(baseWord);
+        _dbContext.Words.RemoveRange(baseWord.ChildrenWords);
         await _dbContext.SaveChangesAsync();
         return Ok();
     }
 
     
-    
-    
-    /// <summary>
-    /// Получить слова из расширенного словаря 
-    /// </summary>
-    /// <returns></returns>
-    [HttpGet("GetExtentedWord")]
-    public async Task<IActionResult> GetExtentedWord(string baseWord)
-    {
-        var response = await _dbContext.ExtentedWords
-            .Where(i => i.BaseWord.Word == baseWord.ToLower()).Select(i => new GetExtentedWords(i)).ToListAsync();
-        
-        
-        return Ok(response);
-    }
-    
-    /// <summary>
-    /// Удалить слово из расширенного словаря
-    /// </summary>
-    /// <param name="wordId"></param>
-    /// <returns></returns>
-    [HttpDelete("ExtentedWord/{id}")]
-    public async Task<IActionResult> DeleteExtentedWord(int id)
-    {
-        var extentedWord = await _dbContext.ExtentedWords.FirstOrDefaultAsync(i => i.Id == id);
-        if (extentedWord == null)
-        {
-            return NotFound();
-        }
-        
-        _dbContext.ExtentedWords.Remove(extentedWord);
-        await _dbContext.SaveChangesAsync();
-        return Ok();
-    }
-
-    /// <summary>
-    /// Добавить слово в расширенный словарь
-    /// </summary>
-    /// <param name="request"></param>
-    /// <returns></returns>
-    [HttpPost("ExtentedWord")]
-    public async Task<IActionResult> AddExtentedWord(AddExtentedWord request)
-    {
-        var extentedWord = _dbContext.ExtentedWords.FirstOrDefault(i => i.Word == request.Word.ToLower());
-        if (extentedWord != null) return BadRequest("Word already exists");
-        
-        var entity = new ExtentedWord()
-        {
-            BaseWordId = request.BaseIdWord,
-            Word = request.Word,
-        };
-        
-        var baseWord = await _dbContext.BaseWords.FirstOrDefaultAsync(i => i.Word == request.Word.ToLower());
-
-        if (baseWord?.Id == request.BaseIdWord) return BadRequest("Word already exists");
-        
-        if (baseWord != null && baseWord.Id != entity.BaseWordId)
-        {
-            _dbContext.BaseWords.Remove(baseWord);
-        }
-        
-        var addedEntity = await _dbContext.ExtentedWords.AddAsync(entity);
-        await _dbContext.SaveChangesAsync();
-        
-        var response = new GetExtentedWords(addedEntity.Entity);
-        return Ok(response);
-    }
-
-    /// <summary>
-    /// Редактировать слово из расширенного словаря
-    /// </summary>
-    /// <param name="id"></param>
-    /// <param name="extentedWord"></param>
-    /// <returns></returns>
-    [HttpPut("ExtentedWord/{id}")]
-    public async Task<IActionResult> EditExtentedWord(int id, [FromBody] EditExtentedWordRequest extentedWord)
-    {
-        var wordToUpdate = await _dbContext.ExtentedWords.FindAsync(id);
-        if (wordToUpdate == null) return NotFound();
-        
-        wordToUpdate.Word = extentedWord.Word;
-        wordToUpdate.BaseWordId = extentedWord.BaseWordId;
-        
-        await _dbContext.SaveChangesAsync();
-        
-        var response = new GetExtentedWords(wordToUpdate);
-        return Ok(response);
-    }
     
   
     
@@ -308,18 +256,18 @@ public class AdminController : ControllerBase
     [HttpPost("Word/Translate/{id}")]
     public async Task<IActionResult> TranslateWord(int id)
     {
-        var word = await _dbContext.BaseWords.FirstOrDefaultAsync(i => i.Id == id);
+        var word = await _dbContext.Words.FirstOrDefaultAsync(i => i.Id == id);
         
-        var translate = await ExternalTranslateService.TranslateYandex(word.Word);
+        var translate = await ExternalTranslateService.TranslateYandex(word.WordText);
         
         if (word.Properties.FirstOrDefault(i => i.Translation == translate.translations.FirstOrDefault()?.text) != null)
-            return Ok(new BaseWordDto(word));
+            return Ok(new WordDto(word));
         
         
         word.Translation = translate.translations.FirstOrDefault()?.text;
         word.Properties.Add(new WordProperties(){Translation = word.Translation});
         await _dbContext.SaveChangesAsync();
-        var response = new BaseWordDto(word);
+        var response = new WordDto(word);
         return Ok(response);
     }
     
@@ -330,7 +278,7 @@ public class AdminController : ControllerBase
     [HttpPost("WordProperty")]
     public async Task<IActionResult> AddWordProperty(AddWordProperty request)
     {
-        var word = await _dbContext.BaseWords.FirstOrDefaultAsync(i => i.Id == request.BaseWordId);
+        var word = await _dbContext.Words.FirstOrDefaultAsync(i => i.Id == request.WordId);
         
         if (word == null) return NotFound("Word not found");
         
@@ -355,7 +303,7 @@ public class AdminController : ControllerBase
     [HttpPut("WordProperty")]
     public async Task<IActionResult> EditWordProperty(EditPropertyWordRequest request)
     {
-        var word = await _dbContext.BaseWords.Include(i => i.Properties).FirstOrDefaultAsync(i => i.Id == request.BaseWordId);
+        var word = await _dbContext.Words.Include(i => i.Properties).FirstOrDefaultAsync(i => i.Id == request.BaseWordId);
         
         if (word == null) return NotFound("Word not found");
         

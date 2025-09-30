@@ -32,15 +32,16 @@ public class UtilityController: ControllerBase
         var userVasya = await _authService.RegisterUser(new RegisterUser()
             { Email = "Vasya@mail.ru", Name = "Vasya", Password = "1111" });
         
+        var word1 = await _dictionaryService.AddWordInBaseDictionary("dog", "собака");
+        await _dictionaryService.AddWordInBaseDictionary("dogs", "собаки", parentWordId: word1.Id);
+        
         await _dictionaryService.AddWordInBaseDictionary("like", "нравится", "verb");
         await _dictionaryService.AddWordInBaseDictionary("like", "как", "preposition");
         
-        await _dictionaryService.AddWordInBaseDictionary("dog", "собака");
+        
         await _dictionaryService.AddWordInBaseDictionary("table", "стол");
         await _dictionaryService.AddWordInBaseDictionary("take", "взять");
         await _dictionaryService.AddWordInBaseDictionary("take off", "снять");
-        await _dictionaryService.AddWordInExtentedDictionary("dogs", "dog", "собаки");
-        await _dictionaryService.AddWordInExtentedDictionary("took", "take" ,"взял" );
         
         
         

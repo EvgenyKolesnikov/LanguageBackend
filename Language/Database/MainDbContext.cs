@@ -14,8 +14,7 @@ namespace Language.Database
         }
 
         public DbSet<User> Users { get; set; }
-        public DbSet<BaseWord> BaseWords { get; set; }
-        public DbSet<ExtentedWord> ExtentedWords { get; set; }
+        public DbSet<Word> Words { get; set; }
         public DbSet<Text> Texts { get; set; }
         public DbSet<WordProperties>  WordProperties { get; set; }
         
@@ -31,8 +30,7 @@ namespace Language.Database
         public void ClearAll()
         {
             Users.RemoveRange(this.Users);
-            BaseWords.RemoveRange(this.BaseWords);
-            ExtentedWords.RemoveRange(this.ExtentedWords);
+            Words.RemoveRange(this.Words);
             Texts.RemoveRange(this.Texts);
             SaveChanges();
         }

@@ -81,19 +81,17 @@ public class TextService
 
     
 
-    public async Task<ICollection<BaseWord>> Process(string text)
+    public async Task<ICollection<Word>> Process(string text)
     {
         var words = text.SplitToWords();
         
-        var baseWords = await _dbContext.BaseWords.Include(i => i.ExtentedWords).ToHashSetAsync();
-        var dict = new List<BaseWord>();
-        var dictToAdd = new List<BaseWord>();
+        var baseWords = await _dbContext.Words.ToHashSetAsync();
+        var dict = new List<Word>();
+        var dictToAdd = new List<Word>();
         
         foreach (var word in words)
         {
-            var wordDb = baseWords.FirstOrDefault(
-                i => i.ExtentedWords != null && (i.Word.ToLower() == word.ToLower() ||
-                i.ExtentedWords.Any(e => e.Word.ToLower() == word.ToLower())));
+            var wordDb = baseWords.FirstOrDefault(i => i.WordText != null && i.WordText.ToLower() == word.ToLower());
             
             if (wordDb != null)
             {
@@ -101,9 +99,9 @@ public class TextService
             }
             else
             {
-                var item = new Model.BaseWord()
+                var item = new Model.Word()
                 {
-                    Word = word.ToLower()
+                    WordText = word.ToLower()
                 };
                 dictToAdd.Add(item);
                 
@@ -111,10 +109,10 @@ public class TextService
             }
         }
         
-        dictToAdd = dictToAdd.DistinctBy(i => i.Word, StringComparer.OrdinalIgnoreCase).ToList();
-        dict = dict.Union(dictToAdd).DistinctBy(i => i.Word).ToList();
+        dictToAdd = dictToAdd.DistinctBy(i => i.WordText, StringComparer.OrdinalIgnoreCase).ToList();
+        dict = dict.Union(dictToAdd).DistinctBy(i => i.WordText).ToList();
         
-        await _dbContext.BaseWords.AddRangeAsync(dictToAdd);
+        await _dbContext.Words.AddRangeAsync(dictToAdd);
         await _dbContext.SaveChangesAsync();
         return dict;
     }

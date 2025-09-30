@@ -7,5 +7,5 @@ public class User
     public string Email { get; set; }
     public string Password { get; set; }
     
-    public List<BaseWord>  Dictionary { get; set; }
+    public List<Word>  Dictionary { get; set; }
 }

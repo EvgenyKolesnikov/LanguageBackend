@@ -24,10 +24,8 @@ public class TranslateService
     
     public async Task<TranslateResponse> Translate(TranslateRequest request)
     {
-        _words = await _dbContext.BaseWords.ToDictionaryAsync(i => i.Word, i => new TranslateDto(){Translation = i.Translation, BaseWord = i.Word, Word = i.Word});
-        var extendedWords = await _dbContext.ExtentedWords.ToDictionaryAsync(i => i.Word, i => new TranslateDto(){Translation = i.Translation, BaseWord = i.BaseWord.Word, Word = i.Word});
+        _words = await _dbContext.Words.ToDictionaryAsync(i => i.WordText, i => new TranslateDto(){Translation = i.Translation, BaseWord = i.WordText, Word = i.WordText});
         
-        _words = new Dictionary<string, TranslateDto?>(_words.Union(extendedWords));
         List<string> candidates = new List<string>();
         
         if (string.IsNullOrWhiteSpace(request.ClickedWord))
@@ -73,17 +71,17 @@ public class TranslateService
         return new TranslateResponse();
     }
 
-    public async Task<BaseWordDto> TranslateWord(string text)
+    public async Task<WordDto> TranslateWord(string text)
     {
-        var word = await _dbContext.BaseWords.FirstOrDefaultAsync(i => i.Word == text);
+        var word = await _dbContext.Words.FirstOrDefaultAsync(i => i.WordText == text);
         
         if (word?.Translation != null)
-            return new BaseWordDto(word);
+            return new WordDto(word);
         
         var translate = await _externalTranslateService.TranslateYandex(text);
 
         if (translate.translations.FirstOrDefault() == null)
-            return new BaseWordDto();
+            return new WordDto();
         
         
         if (word != null)
@@ -95,7 +93,7 @@ public class TranslateService
             }
           
             await _dbContext.SaveChangesAsync();    
-            return new BaseWordDto(word);
+            return new WordDto(word);
         }
         
         
@@ -103,9 +101,9 @@ public class TranslateService
         if (translation != null)
         {
             var baseword = await _dictionaryService.AddWordInBaseDictionary(text, translation);
-            return new BaseWordDto(baseword);
+            return new WordDto(baseword);
         }
         
-        return new BaseWordDto();
+        return new WordDto();
     }
 }

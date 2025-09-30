@@ -13,7 +13,7 @@
                 <StackPanel>
                     <StackPanel Orientation="Horizontal" Margin="5 5" HorizontalAlignment="Left">
                         <TextBlock Text="Слово:    " Margin="5 5"/>
-                        <TextBox MinWidth="150" Text="{Binding AddWordRequest.BaseWord, UpdateSourceTrigger=PropertyChanged}"/>
+                        <TextBox MinWidth="150" Text="{Binding AddWordRequest.WordText, UpdateSourceTrigger=PropertyChanged}"/>
                     </StackPanel>   
                     
                     <StackPanel Orientation="Horizontal" Margin="5 5" HorizontalAlignment="Left">
@@ -22,16 +22,16 @@
                     </StackPanel>
                     
                     <StackPanel Orientation="Horizontal" Margin="5 5" HorizontalAlignment="Left">
-                        <Button Width="100" Content="Добавить слово" Command="{Binding AddBaseWordCommand}" Margin="5 5" HorizontalAlignment="Left"/>
+                        <Button Width="100" Content="Добавить слово" Command="{Binding AddWordCommand}" Margin="5 5" HorizontalAlignment="Left"/>
                         <TextBlock Text="Выбранное слово: " VerticalAlignment="Center"/>
-                        <TextBlock Text="{Binding CurrentBaseWord.Word}" VerticalAlignment="Center" FontWeight="Bold"/> 
+                        <TextBlock Text="{Binding CurrentWord.WordText}" VerticalAlignment="Center" FontWeight="Bold"/> 
                     </StackPanel>
                    
                 <ListView ItemsSource="{Binding BaseWords}" Height="300"  Width="480">
                     
                     <ListView.View >
                         <GridView>
-                                <GridViewColumn Header="Слово" Width="100" DisplayMemberBinding="{Binding Path=Word, Mode=TwoWay}" />
+                                <GridViewColumn Header="Слово" Width="100" DisplayMemberBinding="{Binding Path=WordText, Mode=TwoWay}" />
                                 <GridViewColumn Header="Перевод" Width="100" DisplayMemberBinding="{Binding Path=Translation, Mode=TwoWay}" />
                            
                                 <GridViewColumn >
@@ -45,7 +45,7 @@
                             <GridViewColumn >
                                 <GridViewColumn.CellTemplate >
                                     <DataTemplate >
-                                        <Button x:Name="EditButton" Content="Edit" Height="25" Width="40" Command="{Binding DataContext.OpenEditBaseWordForm,RelativeSource={RelativeSource Mode=FindAncestor,AncestorType={x:Type ListView}}}" CommandParameter="{Binding RelativeSource={RelativeSource Self}}"/>
+                                        <Button x:Name="EditButton" Content="Edit" Height="25" Width="40" Command="{Binding DataContext.OpenEditWordForm,RelativeSource={RelativeSource Mode=FindAncestor,AncestorType={x:Type ListView}}}" CommandParameter="{Binding RelativeSource={RelativeSource Self}}"/>
                                     </DataTemplate>
                                 </GridViewColumn.CellTemplate>
                             </GridViewColumn>
@@ -53,7 +53,7 @@
                             <GridViewColumn >
                                 <GridViewColumn.CellTemplate >
                                     <DataTemplate >
-                                        <Button x:Name="DeleteButton" Content="Delete" Height="25" Width="40" Command="{Binding DataContext.DeleteBaseWordCommand,RelativeSource={RelativeSource Mode=FindAncestor,AncestorType={x:Type ListView}}}" CommandParameter="{Binding RelativeSource={RelativeSource Self}}"/>
+                                        <Button x:Name="DeleteButton" Content="Delete" Height="25" Width="40" Command="{Binding DataContext.DeleteWordCommand,RelativeSource={RelativeSource Mode=FindAncestor,AncestorType={x:Type ListView}}}" CommandParameter="{Binding RelativeSource={RelativeSource Self}}"/>
                                     </DataTemplate>
                                 </GridViewColumn.CellTemplate>
                             </GridViewColumn>
