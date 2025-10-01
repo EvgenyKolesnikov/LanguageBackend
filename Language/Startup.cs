@@ -18,9 +18,7 @@ namespace Language
 
         public Startup(IConfiguration configuration, IWebHostEnvironment env)
         {
-            Configuration = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory()) // Укажите путь к файлу appsettings.json
-                .AddJsonFile("appsettings.json").Build();;
+            Configuration = configuration;
             Environment = env;
         }
 
@@ -113,7 +111,19 @@ namespace Language
         }
         private void AddDbContext(IServiceCollection services)
         {
-            var connectionString = Configuration.GetConnectionString("local");
+            // Для тестовой среды используем динамический connection string из переменных окружения
+            string connectionString;
+            if (Environment.IsEnvironment("Test"))
+            {
+                
+                // В тестовой среде connection string будет передан через переменные окружения
+                connectionString = (System.Environment.GetEnvironmentVariable("TEST_CONNECTION_STRING") 
+                                    ?? Configuration.GetConnectionString("local"))!;
+            }
+            else
+            {
+                connectionString = Configuration.GetConnectionString("local");
+            }
             
             services.AddDbContext<MainDbContext>(options =>
             options.UseNpgsql(connectionString)

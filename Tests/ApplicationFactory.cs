@@ -29,22 +29,8 @@ public class ApplicationFactory : WebApplicationFactory<Program>, IAsyncLifetime
         // Настраиваем конфигурацию для тестов
         builder.ConfigureAppConfiguration((context, config) =>
         {
-            // Добавляем тестовую конфигурацию
+            config.Sources.Clear();
             config.AddJsonFile("appsettings.Test.json", optional: false, reloadOnChange: true);
-        });
-        
-        builder.ConfigureServices(services =>
-        {
-            // Удаляем существующий DbContext
-            var descriptor = services.SingleOrDefault(d => d.ServiceType == typeof(DbContextOptions<MainDbContext>));
-            if (descriptor != null)
-                services.Remove(descriptor);
-
-            // Добавляем новый DbContext с тестовым connection string
-            services.AddDbContext<MainDbContext>(options =>
-            {
-                options.UseNpgsql(_connectionString);
-            });
         });
     }
 
@@ -56,6 +42,7 @@ public class ApplicationFactory : WebApplicationFactory<Program>, IAsyncLifetime
         if (_usePostgreSql && _databaseFixture is PostgreFixture postgreFixture)
         {
             _connectionString = postgreFixture.ConnectionString;
+            Environment.SetEnvironmentVariable("TEST_CONNECTION_STRING", _connectionString);
         }
     }
 

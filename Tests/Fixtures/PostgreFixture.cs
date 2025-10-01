@@ -56,9 +56,10 @@ public class PostgreFixture : IAsyncLifetime
             {
                 new Word { Id = 1, WordText = "take", Translation = "взять" },
                 new Word { Id = 2, WordText = "take off", Translation = "снять" },
-                new Word { Id = 3, WordText = "run", Translation = "бежать" },
-                new Word { Id = 4, WordText = "swim", Translation = "плавать" },
-                new Word { Id = 5, WordText = "fly", Translation = "летать" }
+                new Word { Id = 3, WordText = "took", Translation = "взял" },
+                new Word { Id = 4, WordText = "run", Translation = "бежать" },
+                new Word { Id = 5, WordText = "swim", Translation = "плавать" },
+                new Word { Id = 6, WordText = "fly", Translation = "летать" }
             };
             _context.Words.AddRange(testWords);
             
