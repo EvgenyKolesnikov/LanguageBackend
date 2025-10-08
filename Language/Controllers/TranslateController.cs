@@ -26,7 +26,14 @@ public class TranslateController : ControllerBase
     [HttpPost("Translate")]
     public async Task<IActionResult> Translate([FromBody] TranslateRequest request)
     {
-        var response = await _translateService.Translate(request);
-        return Ok(response);
+        try
+        {
+            var response = await _translateService.Translate(request);
+            return Ok(response);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 }

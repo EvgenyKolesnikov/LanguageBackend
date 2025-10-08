@@ -37,6 +37,7 @@ namespace Language
                 {
                     Version = "v1",
                     Title = "Language API",
+                    Description = $"Deployed: {DateTime.Now:dd/MM/yyyy hh:mm:ss}"
                 });
 
                 // using System.Reflection;
