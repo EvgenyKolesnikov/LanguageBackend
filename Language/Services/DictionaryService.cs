@@ -18,26 +18,14 @@ public class DictionaryService
     public async Task<Word?> AddWordToUser(string word, User user)
     {
         Word? response = null;
-        var extentedWord = await _dbContext.Words
-            .Include(i => i)
-            .ThenInclude(i => i.Users)
+        var wordDb = await _dbContext.Words
+            .Include(i => i.Users)
             .FirstOrDefaultAsync(i => i.WordText == word.ToLower());
         
-        if (extentedWord != null)
+        if (wordDb != null)
         {
-            response = extentedWord;
-        }
-        else
-        {
-            var wordDb = await _dbContext.Words.Include(i => i.Users)
-                .FirstOrDefaultAsync(i => i.WordText == word.ToLower());
-
-            if (wordDb != null)
-            {
-                wordDb.Users.Add(user);    
-                response = wordDb;
-                
-            }
+            wordDb.Users.Add(user);
+            response = wordDb;
         }
         
         await _dbContext.SaveChangesAsync();

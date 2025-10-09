@@ -333,4 +333,27 @@ public class AdminController : ControllerBase
         await _dbContext.SaveChangesAsync();
         return Ok();
     }
+
+
+    [HttpGet("BookNames")]
+    public async Task<IActionResult> GetBookNames()
+    {
+        var response = await _textService.GetBookNamesAsync();
+        
+        return Ok(response);
+    }
+    
+    [HttpGet("Books")]
+    public async Task<IActionResult> GetAllBooks()
+    {
+        var response = await _textService.GetBooksAsync();
+        return Ok(response);
+    }
+
+    [HttpGet("Book/{id}")]
+    public async Task<IActionResult> GetBook(int id)
+    {
+        var response = await _textService.GetBookAsync(id);
+        return Ok(response);
+    }
 }

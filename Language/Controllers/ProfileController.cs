@@ -18,11 +18,13 @@ public class ProfileController : ControllerBase
 {
     public readonly MainDbContext _dbContext;
     public readonly DictionaryService _dictionaryService;
+    public readonly TextService _textService;
     
-    public ProfileController(MainDbContext dbcontext, DictionaryService dictionaryService)
+    public ProfileController(MainDbContext dbcontext, TextService textService, DictionaryService dictionaryService)
     {
         _dbContext = dbcontext;
         _dictionaryService = dictionaryService;
+        _textService = textService;
     }
 
 
@@ -51,6 +53,33 @@ public class ProfileController : ControllerBase
         return Ok(userResponse);
     }
 
+
+    
+    /// <summary>
+    /// Добавить пользовательскую книгу 
+    /// </summary>
+    /// <param name="text"></param>
+    /// <returns></returns>
+    [CustomAuthorize]
+    [HttpPost("UserBook")]
+    public async Task<IActionResult> AddUserBook(string name, string text)
+    {
+        var authHeader = Request.Headers["Authorization"].FirstOrDefault();
+        var userIdClaim = authHeader.GetClaimFromJwtToken(ClaimTypes.NameIdentifier);
+        
+        if (userIdClaim == null)
+            return BadRequest("UserId claim not found in token");
+        
+        var user = await _dbContext.Users.FindAsync(new Guid (userIdClaim));
+        if (user == null) return BadRequest("User Not Found");
+        
+        var bookDb = await _textService.AddBook(name, text, user);;
+        
+        return Ok();
+    }
+    
+    
+    
     
     /// <summary>
     /// Добавить слово в словарь пользователя

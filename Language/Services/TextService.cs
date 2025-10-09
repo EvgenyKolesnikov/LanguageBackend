@@ -16,7 +16,42 @@ public class TextService
     {
         _dbContext = dbcontext;
     }
+
+
+    public async Task<BookDto> AddBook(string name,string bookText, User user)
+    {
+        var response = await AddNewBook(name, bookText, user);
+        return new BookDto(response);
+    }
+
+    public async Task<List<BookNames>> GetBookNamesAsync()
+    {
+        var bookNames = await _dbContext.Books.Select(i => new BookNames(i.Id, i.Name)).ToListAsync();
+
+        return bookNames;
+    }
+
+
+    public async Task<BookDto> GetBookAsync(int id)
+    {
+        var book = await _dbContext.Books.FindAsync(id);
+        if (book == null) return null;
+        
+        return new BookDto(book);
+    }
     
+    public async Task<List<BookDto>> GetBooksAsync()
+    {
+        var books = _dbContext.Books.ToList();
+
+        var response = new List<BookDto>();
+        foreach (var book in books)
+        {
+            response.Add(new BookDto(book));
+        }
+        
+        return response;
+    }
     
     public async Task<TextDto> AddText(string text)
     {
@@ -116,7 +151,25 @@ public class TextService
         await _dbContext.SaveChangesAsync();
         return dict;
     }
-    
+
+
+    public async Task<Book> AddNewBook(string name, string text, User user)
+    {
+        if (user == null)
+            throw new Exception("User not found");
+        
+        
+        var entity = new Book()
+        {
+            Name = name,
+            Content = text,
+            Users = new List<User>() { user }
+        };
+        var response = await _dbContext.Books.AddAsync(entity);
+        await _dbContext.SaveChangesAsync();
+        
+        return response.Entity;
+    }
     
     public async Task<Text> ProcessNewText(string text)
     {

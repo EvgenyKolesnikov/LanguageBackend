@@ -8,4 +8,5 @@ public class User
     public string Password { get; set; }
     
     public List<Word>  Dictionary { get; set; }
+    public List<Book> Books { get; set; }
 }
